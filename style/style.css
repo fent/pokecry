@@ -1,0 +1,78 @@
+body {
+  font-size: 130%;
+  font-family: "Avant Garde", Avantgarde, "Century Gothic", CenturyGothic, "AppleGothic", sans-serif;
+}
+
+.content {
+  width: 400px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.hidden {
+  display: none;
+}
+
+.results {
+  height: 80px;
+}
+
+.success, .right {
+  color: green;
+}
+
+.failure, .wrong {
+  color: red;
+}
+
+.score {
+  color: #000;
+  padding-left: 10px;
+}
+
+.play {
+  margin: 0 auto;
+  width: 80px;
+  height: 80px;
+  font-size: 40px;
+  line-height: 80px;
+  padding-left: 5px;
+  background-color: #000;
+  border-radius: 100%;
+  color: #fff;
+  cursor: pointer;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.pokemon-sprite {
+  width: 80px;
+  height: 73px;
+}
+
+.option, .play {
+  cursor: pointer;
+}
+
+.options {
+  margin-top: 30px;
+}
+
+.option {
+  border-radius: 30px;
+  border: 1px solid #333;
+  margin: 3px;
+}
+
+.option.disabled {
+  cursor: default;
+  background-color: #dcdcdc;
+}
+
+.option:hover:not(.disabled) {
+  color: #fff;
+  background-color: #000;
+}
