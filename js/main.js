@@ -7,7 +7,8 @@
   var totalPokemon = MAX - MIN - + 1;
   var totalGuesses = 0;
   var correctGuesses = 0;
-  var pokemons = window.pokemons.slice(MIN - 1, MAX - 1);
+  var allPokemons = window.pokemons.slice(MIN - 1, MAX - 1);
+  var pokemonsLeft = allPokemons.slice();
 
   var $options = $('.options').children();
   var $success = $('.success');
@@ -19,25 +20,25 @@
   $play.click(playCry);
   $play.jrumble();
 
-  function randomPokemon() {
-    return pokemons[~~(Math.random() * pokemons.length)];
+  function randomPokemonThatAreNot(theid, n) {
+    var pokemons = [];
+    var pokemonsHash = {};
+    pokemonsHash[theid] = true;
+
+    for (var i = 0; i < n; i++) {
+      var pokemon;
+      do {
+        pokemon = allPokemons[~~(Math.random() * allPokemons.length)];
+      } while (pokemonsHash[pokemon.species_id] === true);
+      pokemons.push(pokemon);
+    }
+
+    return pokemons;
   }
 
-  function randomPokemonThatIsNot(id) {
-    var pokemon;
-    do {
-      pokemon = randomPokemon();
-    } while (pokemon.species_id === id);
-    return pokemon;
-  }
-
-  var pastPokemon = {};
   function randomNonPastPokemon() {
-    var pokemon;
-    do {
-      pokemon = randomPokemon();
-    } while (pastPokemon[pokemon.species_id] === true);
-    return pokemon;
+    var index = ~~(Math.random() * pokemonsLeft.length);
+    return pokemonsLeft.splice(index, 1)[0];
   }
 
   function shuffle(array) {
@@ -60,13 +61,8 @@
 
   function nextRound() {
     thePokemon = randomNonPastPokemon();
-    pastPokemon[thePokemon.species_id] = true;
-    var roundPokemons = [
-      thePokemon,
-      randomPokemonThatIsNot(thePokemon.species_id),
-      randomPokemonThatIsNot(thePokemon.species_id),
-      randomPokemonThatIsNot(thePokemon.species_id)
-    ];
+    var roundPokemons = randomPokemonThatAreNot(thePokemon.species_id, 3);
+    roundPokemons.push(thePokemon);
     roundPokemons = shuffle(roundPokemons);
     for (var i = 0, len = $options.length; i < len; i++) {
       var $child = $($options[i]);
