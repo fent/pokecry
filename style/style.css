@@ -76,3 +76,28 @@ body {
   color: #fff;
   background-color: #000;
 }
+
+@media only screen 
+and (min-device-width : 320px) 
+and (max-device-width : 720px) {
+  body {
+    font-size: 200%;
+  }
+
+  .content {
+    width: 90%;
+  }
+
+  .play {
+    width: 160px;
+    height: 160px;
+    font-size: 80px;
+    line-height: 160px;
+    padding-left: 10px;
+  }
+
+  .pokemon-sprite {
+    width: 160px;
+    height: 146px;
+  }
+}
