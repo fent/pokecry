@@ -77,7 +77,7 @@
       $child.click(guess);
     }
 
-    theCry = new Audio('cries/' + thePokemon.species_id + '.ogg');
+    theCry = new Audio('cries/' + thePokemon.species_id + '.mp3');
     setTimeout(playCry, PLAY_CRY_TIMEOUT);
     $play.removeClass('hidden');
     $sprite.addClass('hidden');
