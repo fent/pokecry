@@ -2,7 +2,7 @@
   var MIN = 1;
   var MAX = 151;
   var PLAY_CRY_TIMEOUT = 0;
-  var NEXT_ROUND_TIMEOUT = 1000;
+  var NEXT_ROUND_TIMEOUT = 600;
   var PING_TIMEOUT = 600;
 
   var totalGuesses = 0;
