@@ -3,6 +3,7 @@
   var MAX = 151;
   var PLAY_CRY_TIMEOUT = 0;
   var NEXT_ROUND_TIMEOUT = 1000;
+  var PING_TIMEOUT = 600;
 
   var totalGuesses = 0;
   var correctGuesses = 0;
@@ -135,6 +136,8 @@
   function displayEndScreen() {
     var $endScreen = $('.end-screen');
     $endScreen.removeClass('hidden');
+    var ping = new Audio('ping.mp3');
+
     for (var i = 0, len = guessedWrong.length; i < len; i++) {
       (function(pokemon, i) {
         var cry = new Audio('cries/' + pokemon.species_id + '.mp3');
@@ -145,8 +148,9 @@
         cry.onended = function() { $img.trigger('stopRumble'); };
         $img.click(function() { cry.play(); });
         setTimeout(function() {
+          ping.play();
           $endScreen.append($img);
-        }, i * 1000);
+        }, i * PING_TIMEOUT);
       })(guessedWrong[i], i);
       
     }
