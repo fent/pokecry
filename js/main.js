@@ -4,11 +4,11 @@
   var PLAY_CRY_TIMEOUT = 0;
   var NEXT_ROUND_TIMEOUT = 1000;
 
-  var totalPokemon = MAX - MIN - + 1;
   var totalGuesses = 0;
   var correctGuesses = 0;
-  var allPokemons = window.pokemons.slice(MIN - 1, MAX - 1);
+  var allPokemons = window.pokemons.slice(MIN - 1, MAX);
   var pokemonsLeft = allPokemons.slice();
+  var guessedWrong = [];
 
   var $options = $('.options').children();
   var $success = $('.success');
@@ -31,6 +31,7 @@
         pokemon = allPokemons[~~(Math.random() * allPokemons.length)];
       } while (pokemonsHash[pokemon.species_id] === true);
       pokemons.push(pokemon);
+      pokemonsHash[pokemon.species_id] = true;
     }
 
     return pokemons;
@@ -80,12 +81,8 @@
   }
 
   function playCry() {
-    theCry.onplay = function() {
-      $play.trigger('startRumble');
-    };
-    theCry.onended = function() {
-      $play.trigger('stopRumble');
-    };
+    theCry.onplay = function() { $play.trigger('startRumble'); };
+    theCry.onended = function() { $play.trigger('stopRumble'); };
     theCry.play();
   }
 
@@ -103,6 +100,7 @@
       $score.text(correctGuesses + ' / ' + totalGuesses);
       $score.appendTo($success);
     } else {
+      guessedWrong.push(thePokemon);
       $success.addClass('hidden');
       $failure.removeClass('hidden');
       $score.text(correctGuesses + ' / ' + totalGuesses);
@@ -127,8 +125,30 @@
     $sprite.attr('src', 'sprites/red-blue/' + thePokemon.species_id + '.png');
     $sprite.removeClass('hidden');
 
-    if (totalGuesses < totalPokemon) {
+    if (pokemonsLeft.length) {
       setTimeout(nextRound, NEXT_ROUND_TIMEOUT);
+    } else {
+      displayEndScreen();
+    }
+  }
+
+  function displayEndScreen() {
+    var $endScreen = $('.end-screen');
+    $endScreen.removeClass('hidden');
+    for (var i = 0, len = guessedWrong.length; i < len; i++) {
+      (function(pokemon, i) {
+        var cry = new Audio('cries/' + pokemon.species_id + '.mp3');
+        var src = 'sprites/red-blue/' + pokemon.species_id + '.png';
+        var $img = $('<img class="pokemon-sprite" src="' + src + '" />');
+        $img.jrumble();
+        cry.onplay = function() { $img.trigger('startRumble'); };
+        cry.onended = function() { $img.trigger('stopRumble'); };
+        $img.click(function() { cry.play(); });
+        setTimeout(function() {
+          $endScreen.append($img);
+        }, i * 1000);
+      })(guessedWrong[i], i);
+      
     }
   }
 })(window, document);
