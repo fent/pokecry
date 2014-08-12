@@ -73,7 +73,7 @@
       var pokemon = roundPokemons[i];
       $child.data('species_id', pokemon.species_id);
       $child.text(pokemon.identifier);
-      $child.removeClass('disabled right wrong');
+      $child.removeClass('disabled right');
       $child.click(guess);
     }
 
@@ -119,10 +119,10 @@
       $child = $($options[i]);
       $child.addClass('disabled');
 
-      // Label the pokemon that was the answer, and those that weren't.
-      var label = $child.data('species_id') === thePokemon.species_id ?
-        'right' : 'wrong';
-      $child.addClass(label);
+      // Label the pokemon that was the answer.
+      if ($child.data('species_id') === thePokemon.species_id) {
+        $child.addClass('right');
+      }
       $child.unbind('click', guess);
     }
 
