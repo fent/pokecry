@@ -1,7 +1,6 @@
 (function (window) {
   var MIN = 1;
   var MAX = 151;
-  var PLAY_CRY_TIMEOUT = 0;
   var NEXT_ROUND_TIMEOUT = 600;
   var PING_TIMEOUT = 600;
 
@@ -76,16 +75,16 @@
     }
 
     theCry = new Audio('cries/' + thePokemon.species_id + '.mp3');
-    setTimeout(playCry, PLAY_CRY_TIMEOUT);
+    theCry.addEventListener('play', startRumble);
+    theCry.addEventListener('ended', stopRumble);
+    theCry.addEventListener('canplay', playCry);
     $play.removeClass('hidden');
     $sprite.addClass('hidden');
   }
 
-  function playCry() {
-    theCry.onplay = function() { $play.trigger('startRumble'); };
-    theCry.onended = function() { $play.trigger('stopRumble'); };
-    theCry.play();
-  }
+  function startRumble() { $play.trigger('startRumble'); }
+  function stopRumble() { $play.trigger('stopRumble'); }
+  function playCry() { theCry.play(); }
 
   // Start the very first round in the beginning.
   nextRound();
