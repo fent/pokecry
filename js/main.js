@@ -75,9 +75,9 @@
     }
 
     theCry = new Audio('cries/' + thePokemon.species_id + '.mp3');
+    theCry.autoplay = true;
     theCry.addEventListener('play', startRumble);
     theCry.addEventListener('ended', stopRumble);
-    theCry.addEventListener('canplay', playCry);
     $play.removeClass('hidden');
     $sprite.addClass('hidden');
   }
