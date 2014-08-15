@@ -93,7 +93,7 @@ body {
 and (min-device-width : 320px) 
 and (max-device-width : 720px) {
   body {
-    font-size: 200%;
+    font-size: 250%;
   }
 
   .content {
@@ -101,15 +101,19 @@ and (max-device-width : 720px) {
   }
 
   .play {
-    width: 160px;
-    height: 160px;
-    font-size: 80px;
-    line-height: 160px;
-    padding-left: 10px;
+    width: 240px;
+    height: 240px;
+    font-size: 120px;
+    line-height: 240px;
+    padding-left: 15px;
   }
 
   .pokemon-sprite {
-    width: 160px;
-    height: 146px;
+    width: 240px;
+    height: 219px;
+  }
+
+  .option {
+    line-height: 200%;
   }
 }
