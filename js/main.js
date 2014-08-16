@@ -143,8 +143,12 @@
         var src = 'sprites/red-blue/' + pokemon.species_id + '.png';
         var $img = $('<img class="pokemon-sprite" src="' + src + '" />');
         $img.jrumble();
-        cry.onplay = function() { $img.trigger('startRumble'); };
-        cry.onended = function() { $img.trigger('stopRumble'); };
+        cry.addEventListener('play', function() {
+          $img.trigger('startRumble');
+        });
+        cry.addEventListener('ended', function() {
+          $img.trigger('stopRumble');
+        });
         $img.click(function() { cry.play(); });
         setTimeout(function() {
           ping.play();
