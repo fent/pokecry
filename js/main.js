@@ -74,7 +74,7 @@
       $child.click(guess);
     }
 
-    theCry = new Audio('cries/' + thePokemon.species_id + '.mp3');
+    theCry = new Audio('media/cries/' + thePokemon.species_id + '.mp3');
     theCry.autoplay = true;
     theCry.addEventListener('play', startRumble);
     theCry.addEventListener('ended', stopRumble);
@@ -122,7 +122,8 @@
 
     // Remove the play button and show the pokemon.
     $play.addClass('hidden');
-    $sprite.attr('src', 'sprites/red-blue/' + thePokemon.species_id + '.png');
+    var src = 'media/sprites/red-blue/' + thePokemon.species_id + '.png';
+    $sprite.attr('src', src);
     $sprite.removeClass('hidden');
 
     if (pokemonsLeft.length) {
@@ -135,12 +136,12 @@
   function displayEndScreen() {
     var $endScreen = $('.end-screen');
     $endScreen.removeClass('hidden');
-    var ping = new Audio('ping.mp3');
+    var ping = new Audio('media/ping.mp3');
 
     for (var i = 0, len = guessedWrong.length; i < len; i++) {
       (function(pokemon, i) {
-        var cry = new Audio('cries/' + pokemon.species_id + '.mp3');
-        var src = 'sprites/red-blue/' + pokemon.species_id + '.png';
+        var cry = new Audio('media/cries/' + pokemon.species_id + '.mp3');
+        var src = 'media/sprites/red-blue/' + pokemon.species_id + '.png';
         var $img = $('<img class="pokemon-sprite" src="' + src + '" />');
         $img.jrumble();
         cry.addEventListener('play', function() {
