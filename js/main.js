@@ -268,7 +268,7 @@
         setTimeout(function() {
           ping.play();
           $endScreen.append($img);
-        }, i * PING_TIMEOUT);
+        }, (i + 1) * PING_TIMEOUT);
       })(guessedWrong[i], i);
       
     }
