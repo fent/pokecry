@@ -1,4 +1,5 @@
-window.pokemons = [
+var pokemon = window.pokemon = {};
+pokemon.gen1 = [
   {
     "species_id": "1",
     "identifier": "bulbasaur"
@@ -602,7 +603,10 @@ window.pokemons = [
   {
     "species_id": "151",
     "identifier": "mew"
-  },
+  }
+];
+
+pokemon.gen2 = [
   {
     "species_id": "152",
     "identifier": "chikorita"
@@ -1002,7 +1006,9 @@ window.pokemons = [
   {
     "species_id": "251",
     "identifier": "celebi"
-  },
+  }
+];
+pokemon.gen3 = [
   {
     "species_id": "252",
     "identifier": "treecko"
@@ -1542,7 +1548,9 @@ window.pokemons = [
   {
     "species_id": "386",
     "identifier": "deoxys-normal"
-  },
+  }
+];
+pokemon.gen4 = [
   {
     "species_id": "387",
     "identifier": "turtwig"
@@ -1970,7 +1978,9 @@ window.pokemons = [
   {
     "species_id": "493",
     "identifier": "arceus"
-  },
+  }
+];
+pokemon.gen5 = [
   {
     "species_id": "494",
     "identifier": "victini"
@@ -2594,7 +2604,9 @@ window.pokemons = [
   {
     "species_id": "649",
     "identifier": "genesect"
-  },
+  }
+];
+pokemon.gen6 = [
   {
     "species_id": "650",
     "identifier": "chespin"
