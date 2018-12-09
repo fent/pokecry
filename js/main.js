@@ -105,7 +105,6 @@
 
   // Returns true if there are any pokemon left to play.
   function arePokemonLeft() {
-    if (!pokemonLeft.length) { return false; }
     for (var i = 0, len = pokemonLeft.length; i < len; i++) {
       if (pokemonLeft[i].length) { return true; }
     }
