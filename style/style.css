@@ -71,10 +71,17 @@ body {
   background-color: #dcdcdc;
 }
 
-.option:hover:not(.disabled), .gens .gen:hover, .gens .gen.enabled {
+.option:hover:not(.disabled),
+.gens .gen:hover,
+.gens .gen.enabled {
   cursor: pointer;
   color: #fff;
   background-color: #000;
+}
+
+.option:hover:active,
+.gens .gen:hover:active {
+  color: grey;
 }
 
 .gens-title {
@@ -88,6 +95,54 @@ body {
   border: 1px solid grey;
   border-radius: 5px;
   width: 30px;
+}
+
+.gens .gen::before,
+.gens .gen::after {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.gens .gen::before {
+  z-index: 999;
+  content: attr(data-title);
+  background: black;
+  border: 1px solid black;
+  display: block;
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 10px;
+  padding: 5px;
+  border-radius: 5px;
+  background-color: hsla(0, 0%, 20%, 0.9);
+  color: #fff;
+  text-align: center;
+  filter: drop-shadow(2px 2px 2px hsla(0, 0%, 20%, 0.9));
+  white-space: nowrap;
+}
+
+.gens .gen::after {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  margin-left: -5px;
+  margin-bottom: 5px;
+  width: 0;
+  border-top: 5px solid #000;
+  border-top: 5px solid hsla(0, 0%, 20%, 0.9);
+  border-right: 5px solid transparent;
+  border-left: 5px solid transparent;
+  content: " ";
+  font-size: 0;
+  line-height: 0;
+}
+
+.gens .gen:hover::before,
+.gens .gen:hover::after {
+  visibility: visible;
+  opacity: 1;
 }
 
 .end-screen {
