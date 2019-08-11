@@ -148,7 +148,7 @@ body {
 .end-screen {
   position: absolute;
   top: 0;
-  width: 100%;
+  width: calc(100% - 150px);
   height: 100%;
 }
 
