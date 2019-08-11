@@ -47,7 +47,15 @@ const gens = {
     criesDir: '',
     allPokemon: pokemon.gen6.slice(),
     pokemonLeft: pokemon.gen6.slice()
-  }
+  },
+  7: {
+    enabled: false,
+    spritesDir: 'sun-moon',
+    criesDir: '',
+    criesExt: '.wav',
+    allPokemon: pokemon.gen7.slice(),
+    pokemonLeft: pokemon.gen7.slice()
+  },
 };
 
 // Construct paths for audio and sprites.
@@ -55,10 +63,22 @@ for (let gen in gens) {
   let d = gens[gen];
   for (let i = 0, len = d.allPokemon.length; i < len; i++) {
     let pkm = d.allPokemon[i];
-    pkm.sprite =
-      'media/sprites/' + d.spritesDir + '/' + pkm.species_id + '.png';
-    pkm.cry =
-      'media/cries' + d.criesDir + '/' + pkm.species_id + '.mp3';
+    let spritepath = pkm.species_id;
+    let crypath = pkm.species_id;
+
+    let formsAvailable = pkm.forms && pkm.forms.length;
+    if (formsAvailable && pkm.forms[0][0] === '!') formsAvailable--;
+
+    // 50/50 to select another form.
+    let form;
+    if (formsAvailable && Math.random() > 0.5) {
+      form = pkm.forms[pkm.forms.length - Math.ceil(Math.random() * formsAvailable)];
+      spritepath += '-' + form;
+      if (pkm.formSounds) crypath += '-' + form;
+    }
+
+    pkm.sprite = 'media/sprites/' + d.spritesDir + '/' + spritepath + '.png';
+    pkm.cry = 'media/cries' + d.criesDir + '/' + crypath + (d.criesExt || '.ogg');
   }
 }
 
@@ -122,8 +142,8 @@ let $play = $('.play');
 $play.click(() => theCry.play());
 $play.jrumble();
 
-let $gen = $('.gen');
-$gen.click(() => {
+$('.gen').click(function() {
+  let $gen = $(this)
   $gen.toggleClass('enabled');
   let gen = $gen.attr('data-gen');
   gens[gen].enabled = $gen.hasClass('enabled');

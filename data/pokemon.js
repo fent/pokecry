@@ -2896,3 +2896,360 @@ pokemon.gen6 = [
     "identifier": "volcanion"
   }
 ];
+pokemon.gen7 = [
+  {
+    "species_id": "722",
+    "identifier": "rowlet"
+  },
+  {
+    "species_id": "723",
+    "identifier": "dartrix"
+  },
+  {
+    "species_id": "724",
+    "identifier": "decidueye"
+  },
+  {
+    "species_id": "725",
+    "identifier": "litten"
+  },
+  {
+    "species_id": "726",
+    "identifier": "torracat"
+  },
+  {
+    "species_id": "727",
+    "identifier": "incineroar"
+  },
+  {
+    "species_id": "728",
+    "identifier": "popplio"
+  },
+  {
+    "species_id": "729",
+    "identifier": "brionne"
+  },
+  {
+    "species_id": "730",
+    "identifier": "primarina"
+  },
+  {
+    "species_id": "731",
+    "identifier": "pikipek"
+  },
+  {
+    "species_id": "732",
+    "identifier": "trumbeak"
+  },
+  {
+    "species_id": "733",
+    "identifier": "toucannon"
+  },
+  {
+    "species_id": "734",
+    "identifier": "yungoos"
+  },
+  {
+    "species_id": "735",
+    "identifier": "gumshoos"
+  },
+  {
+    "species_id": "735",
+    "identifier": "gumshoos",
+    "forms": ["totem"],
+    "formSounds": false
+  },
+  {
+    "species_id": "736",
+    "identifier": "grubbin"
+  },
+  {
+    "species_id": "737",
+    "identifier": "charjabug"
+  },
+  {
+    "species_id": "738",
+    "identifier": "vikavolt"
+  },
+  {
+    "species_id": "739",
+    "identifier": "crabrawler"
+  },
+  {
+    "species_id": "740",
+    "identifier": "crabominable"
+  },
+  {
+    "species_id": "741",
+    "identifier": "oricorio",
+    "forms": ["!baile", "pom-pom", "pa-u", "sensu"],
+    "formSounds": true
+  },
+  {
+    "species_id": "742",
+    "identifier": "cutiefly"
+  },
+  {
+    "species_id": "743",
+    "identifier": "ribombee"
+  },
+  {
+    "species_id": "744",
+    "identifier": "rockruff"
+  },
+  {
+    "species_id": "745",
+    "identifier": "lycanroc",
+    "forms": ["!midday", "midnight"],
+    "formSounds": true
+  },
+  {
+    "species_id": "746",
+    "identifier": "wishiwashi",
+    "forms": ["!solo", "school"],
+    "formSounds": true
+  },
+  {
+    "species_id": "747",
+    "identifier": "mareanie"
+  },
+  {
+    "species_id": "748",
+    "identifier": "toxapex"
+  },
+  {
+    "species_id": "749",
+    "identifier": "mudbray"
+  },
+  {
+    "species_id": "750",
+    "identifier": "mudsdale"
+  },
+  {
+    "species_id": "751",
+    "identifier": "dewpider"
+  },
+  {
+    "species_id": "752",
+    "identifier": "araquanid"
+  },
+  {
+    "species_id": "753",
+    "identifier": "fomantis"
+  },
+  {
+    "species_id": "754",
+    "identifier": "lurantis"
+  },
+  {
+    "species_id": "755",
+    "identifier": "morelull"
+  },
+  {
+    "species_id": "756",
+    "identifier": "shiinotic"
+  },
+  {
+    "species_id": "757",
+    "identifier": "salandit"
+  },
+  {
+    "species_id": "758",
+    "identifier": "salazzle"
+  },
+  {
+    "species_id": "759",
+    "identifier": "stufful"
+  },
+  {
+    "species_id": "760",
+    "identifier": "bewear"
+  },
+  {
+    "species_id": "761",
+    "identifier": "bounsweet"
+  },
+  {
+    "species_id": "762",
+    "identifier": "steenee"
+  },
+  {
+    "species_id": "763",
+    "identifier": "tsareena"
+  },
+  {
+    "species_id": "764",
+    "identifier": "comfey"
+  },
+  {
+    "species_id": "765",
+    "identifier": "oranguru"
+  },
+  {
+    "species_id": "766",
+    "identifier": "passimian"
+  },
+  {
+    "species_id": "767",
+    "identifier": "wimpod"
+  },
+  {
+    "species_id": "768",
+    "identifier": "golisopod"
+  },
+  {
+    "species_id": "769",
+    "identifier": "sandygast"
+  },
+  {
+    "species_id": "770",
+    "identifier": "palossand"
+  },
+  {
+    "species_id": "771",
+    "identifier": "pyukumuku"
+  },
+  {
+    "species_id": "772",
+    "identifier": "type"
+  },
+  {
+    "species_id": "773",
+    "identifier": "silvally",
+    "forms": [
+      "bug", "dark", "dragon", "electric", "fairy", "fighting", "fire",
+      "fire", "flying", "ghost", "grass", "ground", "ice", "normal", "ice",
+      "normal", "poison", "psychic", "rock", "steel", "water"
+    ]
+  },
+  {
+    "species_id": "774",
+    "identifier": "minior",
+    "forms": [
+      "blue", "green", "indigo", "orange", "red", "violet", "yellow",
+      "blue-meteor", "green-meteor", "indigo-meteor", "orange-meteor",
+      "red-meteor", "violet-meteor", "yellow-meteor",
+    ]
+  },
+  {
+    "species_id": "775",
+    "identifier": "komala"
+  },
+  {
+    "species_id": "776",
+    "identifier": "turtonator"
+  },
+  {
+    "species_id": "777",
+    "identifier": "togedemaru"
+  },
+  {
+    "species_id": "778",
+    "identifier": "mimikyu",
+    "forms": ["!busted", "disguised", "totem-busted", "totem-disguised"],
+    "formSounds": false
+  },
+  {
+    "species_id": "779",
+    "identifier": "bruxish"
+  },
+  {
+    "species_id": "780",
+    "identifier": "drampa"
+  },
+  {
+    "species_id": "781",
+    "identifier": "dhelmise"
+  },
+  {
+    "species_id": "782",
+    "identifier": "jangmo-o"
+  },
+  {
+    "species_id": "783",
+    "identifier": "hakamo-o"
+  },
+  {
+    "species_id": "784",
+    "identifier": "kommo-o",
+    "forms": ["totem"],
+    "formSounds": false
+  },
+  {
+    "species_id": "785",
+    "identifier": "tapu"
+  },
+  {
+    "species_id": "786",
+    "identifier": "tapu"
+  },
+  {
+    "species_id": "787",
+    "identifier": "tapu"
+  },
+  {
+    "species_id": "788",
+    "identifier": "tapu"
+  },
+  {
+    "species_id": "789",
+    "identifier": "cosmog"
+  },
+  {
+    "species_id": "790",
+    "identifier": "cosmoem"
+  },
+  {
+    "species_id": "791",
+    "identifier": "solgaleo"
+  },
+  {
+    "species_id": "792",
+    "identifier": "lunala"
+  },
+  {
+    "species_id": "793",
+    "identifier": "nihilego"
+  },
+  {
+    "species_id": "794",
+    "identifier": "buzzwole"
+  },
+  {
+    "species_id": "795",
+    "identifier": "pheromosa"
+  },
+  {
+    "species_id": "796",
+    "identifier": "xurkitree"
+  },
+  {
+    "species_id": "797",
+    "identifier": "celesteela"
+  },
+  {
+    "species_id": "798",
+    "identifier": "kartana"
+  },
+  {
+    "species_id": "799",
+    "identifier": "guzzlord"
+  },
+  {
+    "species_id": "800",
+    "identifier": "necrozma",
+    "forms": ["dusk", "dawn", "ultra"],
+    "formSounds": false,
+    "formSprites": false
+  },
+  {
+    "species_id": "801",
+    "identifier": "magearna",
+    "forms": ["original"],
+    "formSounds": false
+  },
+  {
+    "species_id": "802",
+    "identifier": "marshadow"
+  },
+];
