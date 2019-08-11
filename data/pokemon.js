@@ -1,4 +1,4 @@
-var pokemon = window.pokemon = {};
+let pokemon = window.pokemon = {};
 pokemon.gen1 = [
   {
     "species_id": "1",
@@ -805,7 +805,13 @@ pokemon.gen2 = [
   },
   {
     "species_id": "201",
-    "identifier": "unown"
+    "identifier": "unown",
+    "forms": [
+      "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k",
+      "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v",
+      "w", "x", "y", "z"
+    ],
+    "formSounds": false
   },
   {
     "species_id": "202",
@@ -1407,7 +1413,9 @@ pokemon.gen3 = [
   },
   {
     "species_id": "351",
-    "identifier": "castform"
+    "identifier": "castform",
+    "forms": ["rainy", "snowy", "sunny"],
+    "formSounds": false
   },
   {
     "species_id": "352",
@@ -1547,7 +1555,9 @@ pokemon.gen3 = [
   },
   {
     "species_id": "386",
-    "identifier": "deoxys-normal"
+    "identifier": "deoxys",
+    "forms": ["!normal", "speed"],
+    "formSounds": false
   }
 ];
 pokemon.gen4 = [
@@ -1653,11 +1663,15 @@ pokemon.gen4 = [
   },
   {
     "species_id": "412",
-    "identifier": "burmy"
+    "identifier": "burmy",
+    "forms": ["!plant", "sandy", "trash"],
+    "formSounds": false
   },
   {
     "species_id": "413",
-    "identifier": "wormadam-plant"
+    "identifier": "wormadam",
+    "forms": ["!plant", "sandy", "trash"],
+    "formSounds": false
   },
   {
     "species_id": "414",
@@ -1689,15 +1703,21 @@ pokemon.gen4 = [
   },
   {
     "species_id": "421",
-    "identifier": "cherrim"
+    "identifier": "cherrim",
+    "forms": ["!overcast", "sunshine"],
+    "formSounds": false
   },
   {
     "species_id": "422",
-    "identifier": "shellos"
+    "identifier": "shellos",
+    "forms": ["east", "!west"],
+    "formSounds": false
   },
   {
     "species_id": "423",
-    "identifier": "gastrodon"
+    "identifier": "gastrodon",
+    "forms": ["east", "!west"],
+    "formSounds": false
   },
   {
     "species_id": "424",
@@ -1921,7 +1941,9 @@ pokemon.gen4 = [
   },
   {
     "species_id": "479",
-    "identifier": "rotom"
+    "identifier": "rotom",
+    "forms": ["fan", "frost", "heat", "mow", "wash"],
+    "formSounds" : false
   },
   {
     "species_id": "480",
@@ -1953,7 +1975,9 @@ pokemon.gen4 = [
   },
   {
     "species_id": "487",
-    "identifier": "giratina-altered"
+    "identifier": "giratina",
+    "forms": ["!altered", "origin"],
+    "formSounds": false
   },
   {
     "species_id": "488",
@@ -1973,11 +1997,19 @@ pokemon.gen4 = [
   },
   {
     "species_id": "492",
-    "identifier": "shaymin-land"
+    "identifier": "shaymin",
+    "forms": ["!land", "sky"],
+    "formSounds": true
   },
   {
     "species_id": "493",
-    "identifier": "arceus"
+    "identifier": "arceus",
+    "forms": [
+      "bug", "dark", "dragon", "electric", "fighting", "fire",
+      "flying", "ghost", "grass", "ground", "ice", "normal", "ice",
+      "normal", "poison", "psychic", "rock", "steel", "unknown", "water"
+    ],
+    "formSounds": false
   }
 ];
 pokemon.gen5 = [
@@ -2207,7 +2239,9 @@ pokemon.gen5 = [
   },
   {
     "species_id": "550",
-    "identifier": "basculin-red-striped"
+    "identifier": "basculin",
+    "forms": ["!red-striped", "blue-striped"],
+    "formSounds": false
   },
   {
     "species_id": "551",
@@ -2227,7 +2261,9 @@ pokemon.gen5 = [
   },
   {
     "species_id": "555",
-    "identifier": "darmanitan-standard"
+    "identifier": "darmanitan",
+    "forms": ["!standard", "zen"],
+    "formSounds": false
   },
   {
     "species_id": "556",
@@ -2347,11 +2383,15 @@ pokemon.gen5 = [
   },
   {
     "species_id": "585",
-    "identifier": "deerling"
+    "identifier": "deerling",
+    "forms": ["autumn", "!spring", "summer", "winter"],
+    "formSoun": false
   },
   {
     "species_id": "586",
-    "identifier": "sawsbuck"
+    "identifier": "sawsbuck",
+    "forms": ["autumn", "!spring", "summer", "winter"],
+    "formSoun": false
   },
   {
     "species_id": "587",
@@ -2571,11 +2611,15 @@ pokemon.gen5 = [
   },
   {
     "species_id": "641",
-    "identifier": "tornadus-incarnate"
+    "identifier": "tornadus",
+    "forms": ["!incarnate", "therian"],
+    "formSounds": false
   },
   {
     "species_id": "642",
-    "identifier": "thundurus-incarnate"
+    "identifier": "thundurus",
+    "forms": ["!incarnate", "therian"],
+    "formSounds": false
   },
   {
     "species_id": "643",
@@ -2587,23 +2631,33 @@ pokemon.gen5 = [
   },
   {
     "species_id": "645",
-    "identifier": "landorus-incarnate"
+    "identifier": "landorus",
+    "forms": ["!incarnate", "therian"],
+    "formSounds": false
   },
   {
     "species_id": "646",
-    "identifier": "kyurem"
+    "identifier": "kyurem",
+    "forms": ["black", "white"],
+    "formSounds": false
   },
   {
     "species_id": "647",
-    "identifier": "keldeo-ordinary"
+    "identifier": "keldeo",
+    "forms": ["!ordinary", "resolute"],
+    "formSounds": false
   },
   {
     "species_id": "648",
-    "identifier": "meloetta-aria"
+    "identifier": "meloetta",
+    "forms": ["!aria", "pirouette"],
+    "formSounds": false
   },
   {
     "species_id": "649",
-    "identifier": "genesect"
+    "identifier": "genesect",
+    "forms": ["burn", "chill", "douse", "shock"],
+    "formSounds": false
   }
 ];
 pokemon.gen6 = [
@@ -2673,7 +2727,13 @@ pokemon.gen6 = [
   },
   {
     "species_id": "666",
-    "identifier": "vivillon"
+    "identifier": "vivillon",
+    "forms": [
+      "archipelago", "continental", "elegant", "fancy", "garden", "high-plains",
+      "!icy-show", "jungle", "marine", "meadow", "modern", "monsoon", "ocean",
+      "poke-ball", "polar", "river", "sandstorm", "savanna", "sun", "tundra"
+    ],
+    "formSounds": false
   },
   {
     "species_id": "667",
@@ -2685,15 +2745,21 @@ pokemon.gen6 = [
   },
   {
     "species_id": "669",
-    "identifier": "flabebe"
+    "identifier": "flabebe",
+    "forms": ["blue", "orange", "!red", "white", "yellow"],
+    "formSounds": false
   },
   {
     "species_id": "670",
-    "identifier": "floette"
+    "identifier": "floette",
+    "forms": ["blue", "orange", "!red", "white", "yellow", "@eternal"],
+    "formSounds": false
   },
   {
     "species_id": "671",
-    "identifier": "florges"
+    "identifier": "florges",
+    "forms": ["blue", "orange", "!red", "white", "yellow"],
+    "formSounds": false
   },
   {
     "species_id": "672",
@@ -2713,7 +2779,12 @@ pokemon.gen6 = [
   },
   {
     "species_id": "676",
-    "identifier": "furfrou"
+    "identifier": "furfrou",
+    "forms": [
+      "dandy", "debutante", "diamond", "heart", "kabuki", "la-reine", "matron",
+      "!natural", "pharaoh", "star"
+    ],
+    "formSounds": false
   },
   {
     "species_id": "677",
@@ -2721,7 +2792,9 @@ pokemon.gen6 = [
   },
   {
     "species_id": "678",
-    "identifier": "meowstic-male"
+    "identifier": "meowstic",
+    "forms": ["female", "!male"],
+    "formSounds": false
   },
   {
     "species_id": "679",
@@ -2733,7 +2806,9 @@ pokemon.gen6 = [
   },
   {
     "species_id": "681",
-    "identifier": "aegislash-shield"
+    "identifier": "aegislash",
+    "forms": ["blade", "!shield"],
+    "formSounds": false
   },
   {
     "species_id": "682",
@@ -2849,11 +2924,15 @@ pokemon.gen6 = [
   },
   {
     "species_id": "710",
-    "identifier": "pumpkaboo-average"
+    "identifier": "pumpkaboo",
+    "forms": ["!average", "large", "small", "super"],
+    "formSounds": true
   },
   {
     "species_id": "711",
-    "identifier": "gourgeist-average"
+    "identifier": "gourgeist",
+    "forms": ["!average", "large", "small", "super"],
+    "formSounds": true
   },
   {
     "species_id": "712",
@@ -2873,7 +2952,9 @@ pokemon.gen6 = [
   },
   {
     "species_id": "716",
-    "identifier": "xerneas"
+    "identifier": "xerneas",
+    "forms": ["!active", "neutral"],
+    "formSounds": false
   },
   {
     "species_id": "717",
@@ -3118,7 +3199,7 @@ pokemon.gen7 = [
     "identifier": "silvally",
     "forms": [
       "bug", "dark", "dragon", "electric", "fairy", "fighting", "fire",
-      "fire", "flying", "ghost", "grass", "ground", "ice", "normal", "ice",
+      "flying", "ghost", "grass", "ground", "ice", "normal", "ice",
       "normal", "poison", "psychic", "rock", "steel", "water"
     ]
   },

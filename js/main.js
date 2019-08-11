@@ -59,15 +59,15 @@ for (let gen in gens) {
     let spritepath = pkm.species_id;
     let crypath = pkm.species_id;
 
-    let formsAvailable = pkm.forms && pkm.forms.length;
-    if (formsAvailable && pkm.forms[0][0] === '!') formsAvailable--;
+    let formsAvailable = pkm.forms && (pkm.formSprites == null || pkm.formSprites) &&
+      pkm.forms.filter(form => form[0] !== '!');
 
     // 50/50 to select another form.
     let form;
-    if (formsAvailable && Math.random() > 0.5) {
-      form = pkm.forms[pkm.forms.length - Math.ceil(Math.random() * formsAvailable)];
-      spritepath += '-' + form;
-      if (pkm.formSounds) crypath += '-' + form;
+    if (formsAvailable && formsAvailable.length && Math.random() > 0.5) {
+      form = formsAvailable[~~(Math.random() * formsAvailable.length)];
+      spritepath += '-' + form.replace(/^@/, '');
+      if (pkm.formSounds || form[0] === '@') crypath += '-' + form.replace(/^@/, '');
     }
 
     pkm.sprite = 'media/sprites/' + d.spritesDir + '/' + spritepath + '.png';
@@ -138,7 +138,7 @@ $play.click(() => theCry.play());
 $play.jrumble();
 
 $('.gen').click(function() {
-  let $gen = $(this)
+  let $gen = $(this);
   $gen.toggleClass('enabled');
   let gen = $gen.attr('data-gen');
   gens[gen].enabled = $gen.hasClass('enabled');
