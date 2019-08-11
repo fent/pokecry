@@ -10,59 +10,52 @@ const gens = {
     enabled: true,
     spritesDir: 'yellow',
     criesDir: '/old',
-    allPokemon: pokemon.gen1.slice(),
-    pokemonLeft: pokemon.gen1.slice()
+    pokemon: pokemon.gen1.slice(),
   },
   2: {
     enabled: false,
     spritesDir: 'crystal',
     criesDir: '/old',
-    allPokemon: pokemon.gen2.slice(),
-    pokemonLeft: pokemon.gen2.slice()
+    pokemon: pokemon.gen2.slice(),
   },
   3: {
     enabled: false,
     spritesDir: 'emerald',
     criesDir: '/old',
-    allPokemon: pokemon.gen3.slice(),
-    pokemonLeft: pokemon.gen3.slice()
+    pokemon: pokemon.gen3.slice(),
   },
   4: {
     enabled: false,
     spritesDir: 'platinum',
     criesDir: '/old',
-    allPokemon: pokemon.gen4.slice(),
-    pokemonLeft: pokemon.gen4.slice()
+    pokemon: pokemon.gen4.slice(),
   },
   5: {
     enabled: false,
     spritesDir: 'black-white',
     criesDir: '/old',
-    allPokemon: pokemon.gen5.slice(),
-    pokemonLeft: pokemon.gen5.slice()
+    pokemon: pokemon.gen5.slice(),
   },
   6: {
     enabled: false,
     spritesDir: 'x-y',
     criesDir: '',
-    allPokemon: pokemon.gen6.slice(),
-    pokemonLeft: pokemon.gen6.slice()
+    pokemon: pokemon.gen6.slice(),
   },
   7: {
     enabled: false,
     spritesDir: 'sun-moon',
     criesDir: '',
     criesExt: '.wav',
-    allPokemon: pokemon.gen7.slice(),
-    pokemonLeft: pokemon.gen7.slice()
+    pokemon: pokemon.gen7.slice(),
   },
 };
 
 // Construct paths for audio and sprites.
 for (let gen in gens) {
   let d = gens[gen];
-  for (let i = 0, len = d.allPokemon.length; i < len; i++) {
-    let pkm = d.allPokemon[i];
+  for (let i = 0, len = d.pokemon.length; i < len; i++) {
+    let pkm = d.pokemon[i];
     let spritepath = pkm.species_id;
     let crypath = pkm.species_id;
 
@@ -80,7 +73,9 @@ for (let gen in gens) {
     pkm.sprite = 'media/sprites/' + d.spritesDir + '/' + spritepath + '.png';
     pkm.cry = 'media/cries' + d.criesDir + '/' + crypath + (d.criesExt || '.ogg');
   }
+  d.pokemonLeft = d.pokemon.slice();
 }
+
 
 // Gets a list of lists of pokemon from all enabled generations.
 const getPokemon = (key) => {
@@ -94,7 +89,7 @@ const getPokemon = (key) => {
   return all;
 };
 
-const getAllPokemon = () => getPokemon('allPokemon');
+const getAllPokemon = () => getPokemon('pokemon');
 const getPokemonLeft = () => getPokemon('pokemonLeft');
 
 let allPokemon, pokemonLeft;
