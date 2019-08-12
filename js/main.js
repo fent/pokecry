@@ -269,14 +269,16 @@ const displayEndScreen = () => {
     let cry = new Audio(pokemon.cry);
     cry.volume = VOLUME;
     let src = pokemon.sprite;
-    let $img = $('<img class="pokemon-sprite" src="' + src + '" />');
+    let $imgWrapper = $('<div><img class="pokemon-sprite" src="' + src + '" /></div>');
+    let $img = $imgWrapper.find('img');
+    $imgWrapper.attr('data-tooltip', pokemon.name || pokemon.identifier);
     $img.jrumble();
     cry.addEventListener('play', () => $img.trigger('startRumble'));
     cry.addEventListener('ended', () => $img.trigger('stopRumble'));
-    $img.click(() => cry.play());
+    $imgWrapper.click(() => cry.play());
     setTimeout(() => {
       ping.play();
-      $endScreen.append($img);
+      $endScreen.append($imgWrapper);
     }, (i + 1) * PING_TIMEOUT);
   }
 };
