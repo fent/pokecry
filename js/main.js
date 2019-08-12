@@ -72,7 +72,7 @@ for (let gen in gens) {
     }
 
     pkm.sprite = 'media/sprites/' + d.spritesDir + '/' + spritepath + '.png';
-    pkm.cry = 'media/cries' + d.criesDir + '/' + crypath + (d.criesExt || '.ogg');
+    pkm.cry = 'media/cries' + d.criesDir + '/' + crypath + (d.criesExt || '.mp3');
   }
   d.pokemonLeft = d.pokemon.slice();
 }
