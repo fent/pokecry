@@ -2,6 +2,7 @@
 
 const NEXT_ROUND_TIMEOUT = 600;
 const PING_TIMEOUT = 600;
+const VOLUME = 0.5;
 
 // For every generation, keep a copy of all pokemon and the pokemon
 // that are left to be guessed from that generation.
@@ -243,6 +244,7 @@ const nextRound = () => {
   }
 
   theCry = new Audio(thePokemon.cry);
+  theCry.volume = VOLUME;
   theCry.autoplay = true;
   theCry.addEventListener('play', startRumble);
   theCry.addEventListener('ended', stopRumble);
@@ -260,10 +262,12 @@ const displayEndScreen = () => {
   let $endScreen = $('.end-screen');
   $endScreen.removeClass('hidden');
   let ping = new Audio('media/ping.mp3');
+  ping.volume = VOLUME;
 
   for (let i = 0, len = guessedWrong.length; i < len; i++) {
     let pokemon = guessedWrong[i];
     let cry = new Audio(pokemon.cry);
+    cry.volume = VOLUME;
     let src = pokemon.sprite;
     let $img = $('<img class="pokemon-sprite" src="' + src + '" />');
     $img.jrumble();
