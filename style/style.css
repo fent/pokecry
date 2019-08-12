@@ -97,15 +97,19 @@ body {
   width: 30px;
 }
 
-.gens .gen::before,
-.gens .gen::after {
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]::before,
+[data-tooltip]::after {
   visibility: hidden;
   opacity: 0;
 }
 
-.gens .gen::before {
+[data-tooltip]::before {
   z-index: 999;
-  content: attr(data-title);
+  content: attr(data-tooltip);
   background: black;
   border: 1px solid black;
   display: block;
@@ -123,7 +127,7 @@ body {
   white-space: nowrap;
 }
 
-.gens .gen::after {
+[data-tooltip]::after {
   position: absolute;
   bottom: 100%;
   left: 50%;
@@ -139,21 +143,22 @@ body {
   line-height: 0;
 }
 
-.gens .gen:hover::before,
-.gens .gen:hover::after {
+[data-tooltip]:hover::before,
+[data-tooltip]:hover::after {
   visibility: visible;
   opacity: 1;
 }
 
 .end-screen {
   position: absolute;
-  top: 0;
-  width: calc(100% - 150px);
+  top: 50px;
+  left: 50px;
+  width: calc(100% - 200px);
   height: 100%;
 }
 
-.end-screen img {
-  float: left;
+.end-screen > div {
+  display: inline-block;
   cursor: pointer;
 }
 
