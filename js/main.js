@@ -238,7 +238,7 @@ const nextRound = () => {
     let $child = $($options[i]);
     let pokemon = roundPokemons[i];
     $child.data('species_id', pokemon.species_id);
-    $child.text(pokemon.identifier);
+    $child.text(pokemon.name || pokemon.identifier);
     $child.removeClass('disabled right');
     $child.click(guess);
   }
