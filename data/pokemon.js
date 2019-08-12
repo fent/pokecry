@@ -114,7 +114,8 @@ pokemon.gen1 = [
   },
   {
     "species_id": "29",
-    "identifier": "nidoran-f"
+    "identifier": "nidoran-f",
+    "name": "nidoran♀"
   },
   {
     "species_id": "30",
@@ -126,7 +127,8 @@ pokemon.gen1 = [
   },
   {
     "species_id": "32",
-    "identifier": "nidoran-m"
+    "identifier": "nidoran-m",
+    "name": "nidoran♂"
   },
   {
     "species_id": "33",
@@ -486,7 +488,8 @@ pokemon.gen1 = [
   },
   {
     "species_id": "122",
-    "identifier": "mr-mime"
+    "identifier": "mr-mime",
+    "name": "mr. mime"
   },
   {
     "species_id": "123",
@@ -1781,7 +1784,8 @@ pokemon.gen4 = [
   },
   {
     "species_id": "439",
-    "identifier": "mime-jr"
+    "identifier": "mime-jr",
+    "name": "mime jr."
   },
   {
     "species_id": "440",
