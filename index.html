@@ -1,47 +1,75 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-  <title>Guess Pokemon from their Cry</title>
-  <meta charset="utf-8" />
-  <link rel="stylesheet" href="style/style.css" type="text/css" media="all" />
-</head>
-<body>
-  <a href="https://github.com/fent/pokecry">
-    <img style="position: absolute; top: 0; right: 0; border: 0; z-index: 999;" src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png">
-  </a>
-  <div class="content">
-    <h1>Who's that Pokemon?</h1>
-    <div class="results">
-      <span class="score">&nbsp;</span>
-      <h2 class="filler">&nbsp;</h2>
-      <h2 class="success hidden">correct</h2>
-      <h2 class="failure hidden">wrong</h2>
+  <head>
+    <title>Guess Pokemon from their Cry</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="style/style.css" type="text/css" media="all" />
+  </head>
+  <body>
+    <a href="https://github.com/fent/pokecry">
+      <img
+        style="position: absolute; top: 0; right: 0; border: 0; z-index: 999"
+        src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67"
+        alt="Fork me on GitHub"
+        data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"
+      />
+    </a>
+    <div class="content">
+      <h1>Who's that Pokemon?</h1>
+      <div class="results">
+        <span class="score">&nbsp;</span>
+        <h2 class="filler">&nbsp;</h2>
+        <h2 class="success hidden">correct</h2>
+        <h2 class="failure hidden">wrong</h2>
+      </div>
+      <div class="play">▶</div>
+      <img class="pokemon-sprite hidden" src="" alt="pokemon-sprite" />
+      <div class="options">
+        <div class="option"></div>
+        <div class="option"></div>
+        <div class="option"></div>
+        <div class="option"></div>
+      </div>
+      <div class="gens-title">gens</div>
+      <div class="gens">
+        <div class="gen gen-1" data-gen="1" data-tooltip="blue / red / yellow">
+          I
+        </div>
+        <div
+          class="gen gen-2"
+          data-gen="2"
+          data-tooltip="gold / silver / crystal"
+        >
+          II
+        </div>
+        <div
+          class="gen gen-3"
+          data-gen="3"
+          data-tooltip="ruby / saphire / emerald"
+        >
+          III
+        </div>
+        <div
+          class="gen gen-4"
+          data-gen="4"
+          data-tooltip="diamond / pearl / platinum"
+        >
+          IV
+        </div>
+        <div class="gen gen-5" data-gen="5" data-tooltip="black / white">V</div>
+        <div class="gen gen-6" data-gen="6" data-tooltip="x / y">VI</div>
+        <div class="gen gen-7" data-gen="7" data-tooltip="sun / moon">VII</div>
+      </div>
     </div>
-    <div class="play">▶</div>
-    <img class="pokemon-sprite hidden" src="" alt="pokemon-sprite" />
-    <div class="options">
-      <div class="option"></div>
-      <div class="option"></div>
-      <div class="option"></div>
-      <div class="option"></div>
-    </div>
-    <div class="gens-title">gens</div>
-    <div class="gens">
-      <div class="gen gen-1" data-gen="1" data-tooltip="blue / red / yellow">I</div>
-      <div class="gen gen-2" data-gen="2" data-tooltip="gold / silver / crystal">II</div>
-      <div class="gen gen-3" data-gen="3" data-tooltip="ruby / saphire / emerald">III</div>
-      <div class="gen gen-4" data-gen="4" data-tooltip="diamond / pearl / platinum">IV</div>
-      <div class="gen gen-5" data-gen="5" data-tooltip="black / white">V</div>
-      <div class="gen gen-6" data-gen="6" data-tooltip="x / y">VI</div>
-      <div class="gen gen-7" data-gen="7" data-tooltip="sun / moon">VII</div>
-    </div>
-  </div>
-  <div class="end-screen hidden"></div>
-  <script src="lib/jquery-1.11.0.min.js"></script>
-  <script src="lib/jquery.jrumble.min.js"></script>
-  <script src="data/pokemon.js"></script>
-  <script src="dist/main.js"></script>
-  <script type="text/javascript" src="https://s7.addthis.com/js/300/addthis_widget.js#pubid=ra-55b4812e1acb29a4" async="async"></script>
-  
-</body>
+    <div class="end-screen hidden"></div>
+    <script src="lib/jquery-1.11.0.min.js"></script>
+    <script src="lib/jquery.jrumble.min.js"></script>
+    <script src="data/pokemon.js"></script>
+    <script src="dist/main.js"></script>
+    <script
+      type="text/javascript"
+      src="https://s7.addthis.com/js/300/addthis_widget.js#pubid=ra-55b4812e1acb29a4"
+      async="async"
+    ></script>
+  </body>
 </html>
