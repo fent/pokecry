@@ -1,6 +1,8 @@
 body {
   font-size: 130%;
-  font-family: "Avant Garde", Avantgarde, "Century Gothic", CenturyGothic, "AppleGothic", sans-serif;
+  font-family:
+    'Avant Garde', Avantgarde, 'Century Gothic', CenturyGothic, 'AppleGothic',
+    sans-serif;
 }
 
 .content {
@@ -17,11 +19,13 @@ body {
   height: 80px;
 }
 
-.success, .right {
+.success,
+.right {
   color: green;
 }
 
-.failure, .wrong {
+.failure,
+.wrong {
   color: red;
 }
 
@@ -138,7 +142,7 @@ body {
   border-top: 5px solid hsla(0, 0%, 20%, 0.9);
   border-right: 5px solid transparent;
   border-left: 5px solid transparent;
-  content: " ";
+  content: ' ';
   font-size: 0;
   line-height: 0;
 }
@@ -162,9 +166,7 @@ body {
   cursor: pointer;
 }
 
-@media only screen 
-and (min-device-width : 320px) 
-and (max-device-width : 720px) {
+@media only screen and (min-device-width: 320px) and (max-device-width: 720px) {
   body {
     font-size: 250%;
   }

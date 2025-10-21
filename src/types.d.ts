@@ -1,4 +1,3 @@
-
 interface PokemonDef {
   species_id: string;
   identifier: string;
@@ -26,6 +25,6 @@ interface PokemonData {
 declare const pokemon: PokemonData;
 
 interface JQuery {
-  jrumble(options?: any): JQuery;
+  jrumble(options?: Record<string, unknown>): JQuery;
   trigger(eventName: 'startRumble' | 'stopRumble'): JQuery;
 }

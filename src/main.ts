@@ -1,4 +1,3 @@
-
 const NEXT_ROUND_TIMEOUT = 600;
 const PING_TIMEOUT = 600;
 const VOLUME = 0.5;
@@ -77,23 +76,26 @@ for (const gen in gens) {
     let spritepath: string = pkm.species_id;
     let crypath: string = pkm.species_id;
 
-    const formsAvailable = pkm.forms && (pkm.formSprites == null || pkm.formSprites) &&
-      pkm.forms.filter(form => form[0] !== '!');
+    const formsAvailable =
+      pkm.forms &&
+      (pkm.formSprites == null || pkm.formSprites) &&
+      pkm.forms.filter((form) => form[0] !== '!');
 
     // 50/50 to select another form.
     let form: string | undefined;
     if (formsAvailable && formsAvailable.length && Math.random() > 0.5) {
       form = formsAvailable[~~(Math.random() * formsAvailable.length)];
       spritepath += '-' + form.replace(/^@/, '');
-      if (pkm.formSounds || (form && form[0] === '@')) crypath += '-' + form.replace(/^@/, '');
+      if (pkm.formSounds || (form && form[0] === '@'))
+        crypath += '-' + form.replace(/^@/, '');
     }
 
     pkm.sprite = 'media/sprites/' + d.spritesDir + '/' + spritepath + '.png';
-    pkm.cry = 'media/cries' + d.criesDir + '/' + crypath + (d.criesExt || '.mp3');
+    pkm.cry =
+      'media/cries' + d.criesDir + '/' + crypath + (d.criesExt || '.mp3');
   }
   d.pokemonLeft = d.pokemon.slice();
 }
-
 
 // Gets a list of lists of pokemon from all enabled generations.
 const getPokemon = (key: 'pokemon' | 'pokemonLeft'): Pokemon[][] => {
@@ -135,7 +137,9 @@ const randomFromLists = (lists: Pokemon[][], remove: boolean): Pokemon => {
 // Returns true if there are any pokemon left to play.
 const arePokemonLeft = (): boolean => {
   for (let i = 0, len = pokemonLeft.length; i < len; i++) {
-    if (pokemonLeft[i].length) { return true; }
+    if (pokemonLeft[i].length) {
+      return true;
+    }
   }
   return false;
 };
@@ -155,7 +159,7 @@ const $play = $('.play');
 $play.on('click', () => theCry.play());
 $play.jrumble();
 
-$('.gen').on('click', function() {
+$('.gen').on('click', function () {
   const $gen = $(this);
   $gen.toggleClass('enabled');
   const gen = $gen.attr('data-gen') as string;
@@ -203,7 +207,7 @@ let thePokemon: Pokemon;
 let theCry: HTMLAudioElement;
 
 // Called whenever the user guesses on a pokemon.
-const guess = function(this: HTMLElement): void {
+const guess = function (this: HTMLElement): void {
   const $child = $(this);
   totalGuesses++;
   if ($child.data('species_id') === thePokemon.species_id) {
@@ -286,16 +290,21 @@ const displayEndScreen = (): void => {
     const cry = new Audio(pokemon.cry);
     cry.volume = VOLUME;
     const src = pokemon.sprite;
-    const $imgWrapper = $('<div><img class="pokemon-sprite" src="' + src + '" /></div>');
+    const $imgWrapper = $(
+      '<div><img class="pokemon-sprite" src="' + src + '" /></div>'
+    );
     const $img = $imgWrapper.find('img');
     $imgWrapper.attr('data-tooltip', pokemon.name || pokemon.identifier);
     $img.jrumble();
     cry.addEventListener('play', () => $img.trigger('startRumble'));
     cry.addEventListener('ended', () => $img.trigger('stopRumble'));
     $imgWrapper.on('click', () => cry.play());
-    setTimeout(() => {
-      ping.play();
-      $endScreen.append($imgWrapper);
-    }, (i + 1) * PING_TIMEOUT);
+    setTimeout(
+      () => {
+        ping.play();
+        $endScreen.append($imgWrapper);
+      },
+      (i + 1) * PING_TIMEOUT
+    );
   }
 };
