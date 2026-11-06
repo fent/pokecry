@@ -1,6 +1,5 @@
 {
   "devDependencies": {
-    "@types/jquery": "^3.5.33",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^9.1.2",
     "prettier": "^3.9.10",

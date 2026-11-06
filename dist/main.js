@@ -1,10 +1,10 @@
 "use strict";
-var NEXT_ROUND_TIMEOUT = 600;
-var PING_TIMEOUT = 600;
-var VOLUME = 0.5;
+const NEXT_ROUND_TIMEOUT = 600;
+const PING_TIMEOUT = 600;
+const VOLUME = 0.5;
 // For every generation, keep a copy of all pokemon and the pokemon
 // that are left to be guessed from that generation.
-var gens = {
+const gens = {
     1: {
         enabled: true,
         spritesDir: 'yellow',
@@ -57,16 +57,16 @@ var gens = {
     },
 };
 // Construct paths for audio and sprites.
-for (var gen in gens) {
-    var d = gens[gen];
-    for (var i = 0, len = d.pokemon.length; i < len; i++) {
-        var pkm = d.pokemon[i];
-        var spritepath = pkm.species_id;
-        var crypath = pkm.species_id;
-        var formsAvailable = pkm.forms && (pkm.formSprites == null || pkm.formSprites) &&
-            pkm.forms.filter(function (form) { return form[0] !== '!'; });
+for (const gen in gens) {
+    const d = gens[gen];
+    for (let i = 0, len = d.pokemon.length; i < len; i++) {
+        const pkm = d.pokemon[i];
+        let spritepath = pkm.species_id;
+        let crypath = pkm.species_id;
+        const formsAvailable = pkm.forms && (pkm.formSprites == null || pkm.formSprites) &&
+            pkm.forms.filter((form) => form[0] !== '!');
         // 50/50 to select another form.
-        var form = void 0;
+        let form;
         if (formsAvailable && formsAvailable.length && Math.random() > 0.5) {
             form = formsAvailable[~~(Math.random() * formsAvailable.length)];
             spritepath += '-' + form.replace(/^@/, '');
@@ -79,40 +79,40 @@ for (var gen in gens) {
     d.pokemonLeft = d.pokemon.slice();
 }
 // Gets a list of lists of pokemon from all enabled generations.
-var getPokemon = function (key) {
-    var all = [];
-    for (var gen in gens) {
-        var d = gens[gen];
+const getPokemon = (key) => {
+    const all = [];
+    for (const gen in gens) {
+        const d = gens[gen];
         if (d.enabled) {
             all.push(d[key]);
         }
     }
     return all;
 };
-var getAllPokemon = function () { return getPokemon('pokemon'); };
-var getPokemonLeft = function () { return getPokemon('pokemonLeft'); };
-var allPokemon, pokemonLeft;
+const getAllPokemon = () => getPokemon('pokemon');
+const getPokemonLeft = () => getPokemon('pokemonLeft');
+let allPokemon, pokemonLeft;
 // This is called when the game first begins, and whenever
 // the generations enabled is updated.
-var updatePokemon = function () {
+const updatePokemon = () => {
     allPokemon = getAllPokemon();
     pokemonLeft = getPokemonLeft();
 };
 updatePokemon();
 // Gets a random pokemon from a list of lists, which will be either
 // all pokemon from enabled generations, or all pokemon that are left.
-var randomFromLists = function (lists, remove) {
-    var list = lists[~~(Math.random() * lists.length)];
-    var index = ~~(Math.random() * list.length);
-    var pkm = list[index];
+const randomFromLists = (lists, remove) => {
+    const list = lists[~~(Math.random() * lists.length)];
+    const index = ~~(Math.random() * list.length);
+    const pkm = list[index];
     if (remove) {
         list.splice(index, 1);
     }
     return pkm;
 };
 // Returns true if there are any pokemon left to play.
-var arePokemonLeft = function () {
-    for (var i = 0, len = pokemonLeft.length; i < len; i++) {
+const arePokemonLeft = () => {
+    for (let i = 0, len = pokemonLeft.length; i < len; i++) {
         if (pokemonLeft[i].length) {
             return true;
         }
@@ -120,45 +120,63 @@ var arePokemonLeft = function () {
     return false;
 };
 // Keep track of player stats.
-var totalGuesses = 0;
-var correctGuesses = 0;
-var guessedWrong = [];
-var $options = $('.options').children();
-var $success = $('.success');
-var $failure = $('.failure');
-var $filler = $('.filler');
-var $score = $('.score');
-var $sprite = $('.pokemon-sprite');
-var $play = $('.play');
-$play.on('click', function () { return theCry.play(); });
-$play.jrumble();
-$('.gen').on('click', function () {
-    var $gen = $(this);
-    $gen.toggleClass('enabled');
-    var gen = $gen.attr('data-gen');
-    gens[parseInt(gen, 10)].enabled = $gen.hasClass('enabled');
-    updatePokemon();
+let totalGuesses = 0;
+let correctGuesses = 0;
+const guessedWrong = [];
+const query = (selector) => {
+    const element = document.querySelector(selector);
+    if (!element) {
+        throw new Error('Missing required element: ' + selector);
+    }
+    return element;
+};
+const optionsElement = query('.options');
+const optionElements = document.querySelectorAll('.option');
+const genElements = document.querySelectorAll('.gen');
+const successElement = query('.success');
+const failureElement = query('.failure');
+const fillerElement = query('.filler');
+const scoreElement = query('.score');
+const spriteElement = query('.pokemon-sprite');
+const playElement = query('.play');
+const setHidden = (element, hidden) => {
+    element.classList.toggle('hidden', hidden);
+};
+const setRumble = (element, active) => {
+    element.classList.toggle('rumble', active);
+};
+playElement.addEventListener('click', () => {
+    theCry.play();
 });
-$('.gen-1').addClass('enabled');
+for (let i = 0, len = genElements.length; i < len; i++) {
+    const genElement = genElements[i];
+    genElement.addEventListener('click', () => {
+        genElement.classList.toggle('enabled');
+        const gen = genElement.getAttribute('data-gen');
+        gens[parseInt(gen, 10)].enabled = genElement.classList.contains('enabled');
+        updatePokemon();
+    });
+}
+query('.gen-1').classList.add('enabled');
 // Returns `n` pokemon that are not the given pokemon.
 // Used to have them be shuffled in with the pokemon to be guessed.
-var randomPokemonThatAreNot = function (theid, n) {
-    var pokemons = [];
-    var pokemonsHash = {};
+const randomPokemonThatAreNot = (theid, n) => {
+    const pokemons = [];
+    const pokemonsHash = {};
     pokemonsHash[theid] = true;
-    for (var i = 0; i < n; i++) {
-        var pokemon_1 = void 0;
+    for (let i = 0; i < n; i++) {
+        let pokemon;
         do {
-            pokemon_1 = randomFromLists(allPokemon, false);
-        } while (pokemonsHash[pokemon_1.species_id] === true);
-        pokemons.push(pokemon_1);
-        pokemonsHash[pokemon_1.species_id] = true;
+            pokemon = randomFromLists(allPokemon, false);
+        } while (pokemonsHash[pokemon.species_id] === true);
+        pokemons.push(pokemon);
+        pokemonsHash[pokemon.species_id] = true;
     }
     return pokemons;
 };
-var shuffle = function (array) {
-    var currentIndex = array.length;
-    var tmp, randomIndex;
+const shuffle = (array) => {
+    let currentIndex = array.length;
+    let tmp, randomIndex;
     while (0 !== currentIndex) {
         randomIndex = ~~(Math.random() * currentIndex);
         currentIndex--;
@@ -168,42 +186,39 @@ var shuffle = function (array) {
     }
     return array;
 };
-var thePokemon;
-var theCry;
+let thePokemon;
+let theCry;
 // Called whenever the user guesses on a pokemon.
-var guess = function () {
-    var $child = $(this);
+const guess = (option) => {
     totalGuesses++;
-    if ($child.data('species_id') === thePokemon.species_id) {
+    if (option.dataset.speciesId === thePokemon.species_id) {
         correctGuesses++;
-        $success.removeClass('hidden');
-        $failure.addClass('hidden');
-        $score.text(correctGuesses + ' / ' + totalGuesses);
-        $score.appendTo($success);
+        setHidden(successElement, false);
+        setHidden(failureElement, true);
+        scoreElement.textContent = correctGuesses + ' / ' + totalGuesses;
+        successElement.appendChild(scoreElement);
     }
     else {
         guessedWrong.push(thePokemon);
-        $success.addClass('hidden');
-        $failure.removeClass('hidden');
-        $score.text(correctGuesses + ' / ' + totalGuesses);
-        $score.appendTo($failure);
+        setHidden(successElement, true);
+        setHidden(failureElement, false);
+        scoreElement.textContent = correctGuesses + ' / ' + totalGuesses;
+        failureElement.appendChild(scoreElement);
     }
-    $filler.addClass('hidden');
+    setHidden(fillerElement, true);
     // Disable all buttons.
-    for (var i = 0, len = $options.length; i < len; i++) {
-        var $option = $($options[i]);
-        $option.addClass('disabled');
+    for (let i = 0, len = optionElements.length; i < len; i++) {
+        const optionElement = optionElements[i];
+        optionElement.classList.add('disabled');
         // Label the pokemon that was the answer.
-        if ($option.data('species_id') === thePokemon.species_id) {
-            $option.addClass('right');
+        if (optionElement.dataset.speciesId === thePokemon.species_id) {
+            optionElement.classList.add('right');
         }
-        $option.off('click', guess);
     }
     // Remove the play button and show the pokemon.
-    $play.addClass('hidden');
-    var src = thePokemon.sprite;
-    $sprite.attr('src', src);
-    $sprite.removeClass('hidden');
+    setHidden(playElement, true);
+    spriteElement.setAttribute('src', thePokemon.sprite);
+    setHidden(spriteElement, false);
     if (arePokemonLeft()) {
         setTimeout(nextRound, NEXT_ROUND_TIMEOUT);
     }
@@ -211,54 +226,63 @@ var guess = function () {
         displayEndScreen();
     }
 };
-var nextRound = function () {
+const startRumble = () => setRumble(playElement, true);
+const stopRumble = () => setRumble(playElement, false);
+const nextRound = () => {
     thePokemon = randomFromLists(pokemonLeft, true);
-    var roundPokemons = randomPokemonThatAreNot(thePokemon.species_id, 3);
+    let roundPokemons = randomPokemonThatAreNot(thePokemon.species_id, 3);
     roundPokemons.push(thePokemon);
     roundPokemons = shuffle(roundPokemons);
-    for (var i = 0, len = $options.length; i < len; i++) {
-        var $child = $($options[i]);
-        var pokemon_2 = roundPokemons[i];
-        $child.data('species_id', pokemon_2.species_id);
-        $child.text(pokemon_2.name || pokemon_2.identifier);
-        $child.removeClass('disabled right');
-        $child.on('click', guess);
+    for (let i = 0, len = optionElements.length; i < len; i++) {
+        const optionElement = optionElements[i];
+        const pokemon = roundPokemons[i];
+        optionElement.dataset.speciesId = pokemon.species_id;
+        optionElement.textContent = pokemon.name || pokemon.identifier;
+        optionElement.classList.remove('disabled', 'right');
     }
     theCry = new Audio(thePokemon.cry);
     theCry.volume = VOLUME;
     theCry.autoplay = true;
     theCry.addEventListener('play', startRumble);
     theCry.addEventListener('ended', stopRumble);
-    $play.removeClass('hidden');
-    $sprite.addClass('hidden');
+    setHidden(playElement, false);
+    setHidden(spriteElement, true);
 };
-var startRumble = function () { return $play.trigger('startRumble'); };
-var stopRumble = function () { return $play.trigger('stopRumble'); };
 // Start the very first round in the beginning.
 nextRound();
-var displayEndScreen = function () {
-    var $endScreen = $('.end-screen');
-    $endScreen.removeClass('hidden');
-    var ping = new Audio('media/ping.mp3');
+const displayEndScreen = () => {
+    const endScreen = query('.end-screen');
+    endScreen.classList.remove('hidden');
+    const ping = new Audio('media/ping.mp3');
     ping.volume = VOLUME;
-    var _loop_1 = function (i, len) {
-        var pokemon_3 = guessedWrong[i];
-        var cry = new Audio(pokemon_3.cry);
+    for (let i = 0, len = guessedWrong.length; i < len; i++) {
+        const pokemon = guessedWrong[i];
+        const cry = new Audio(pokemon.cry);
         cry.volume = VOLUME;
-        var src = pokemon_3.sprite;
-        var $imgWrapper = $('<div><img class="pokemon-sprite" src="' + src + '" /></div>');
-        var $img = $imgWrapper.find('img');
-        $imgWrapper.attr('data-tooltip', pokemon_3.name || pokemon_3.identifier);
-        $img.jrumble();
-        cry.addEventListener('play', function () { return $img.trigger('startRumble'); });
-        cry.addEventListener('ended', function () { return $img.trigger('stopRumble'); });
-        $imgWrapper.on('click', function () { return cry.play(); });
-        setTimeout(function () {
+        const wrapper = document.createElement('div');
+        const image = document.createElement('img');
+        image.className = 'pokemon-sprite';
+        image.setAttribute('src', pokemon.sprite);
+        wrapper.setAttribute('data-tooltip', pokemon.name || pokemon.identifier);
+        cry.addEventListener('play', () => setRumble(image, true));
+        cry.addEventListener('ended', () => setRumble(image, false));
+        wrapper.addEventListener('click', () => cry.play());
+        wrapper.appendChild(image);
+        setTimeout(() => {
             ping.play();
-            $endScreen.append($imgWrapper);
+            endScreen.appendChild(wrapper);
         }, (i + 1) * PING_TIMEOUT);
-    };
-    for (var i = 0, len = guessedWrong.length; i < len; i++) {
-        _loop_1(i, len);
     }
 };
+// Called when the user clicks on one of the guesses.
+optionsElement.addEventListener('click', (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) {
+        return;
+    }
+    const option = target.closest('.option');
+    if (!option || option.classList.contains('disabled')) {
+        return;
+    }
+    guess(option);
+});

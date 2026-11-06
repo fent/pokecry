@@ -162,6 +162,34 @@ body {
   cursor: pointer;
 }
 
+@keyframes rumble {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  25% {
+    transform: translate(-2px, 1px) rotate(-2deg);
+  }
+  50% {
+    transform: translate(2px, -1px) rotate(2deg);
+  }
+  75% {
+    transform: translate(-1px, -2px) rotate(-1deg);
+  }
+  100% {
+    transform: translate(1px, 2px) rotate(1deg);
+  }
+}
+
+.rumble {
+  animation: rumble 0.12s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rumble {
+    animation: none;
+  }
+}
+
 @media only screen 
 and (min-device-width : 320px) 
 and (max-device-width : 720px) {

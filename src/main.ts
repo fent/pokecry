@@ -1,4 +1,3 @@
-
 const NEXT_ROUND_TIMEOUT = 600;
 const PING_TIMEOUT = 600;
 const VOLUME = 0.5;
@@ -77,8 +76,9 @@ for (const gen in gens) {
     let spritepath: string = pkm.species_id;
     let crypath: string = pkm.species_id;
 
-    const formsAvailable = pkm.forms && (pkm.formSprites == null || pkm.formSprites) &&
-      pkm.forms.filter(form => form[0] !== '!');
+    const formsAvailable =
+      pkm.forms && (pkm.formSprites == null || pkm.formSprites) &&
+      pkm.forms.filter((form) => form[0] !== '!');
 
     // 50/50 to select another form.
     let form: string | undefined;
@@ -93,7 +93,6 @@ for (const gen in gens) {
   }
   d.pokemonLeft = d.pokemon.slice();
 }
-
 
 // Gets a list of lists of pokemon from all enabled generations.
 const getPokemon = (key: 'pokemon' | 'pokemonLeft'): Pokemon[][] => {
@@ -135,7 +134,9 @@ const randomFromLists = (lists: Pokemon[][], remove: boolean): Pokemon => {
 // Returns true if there are any pokemon left to play.
 const arePokemonLeft = (): boolean => {
   for (let i = 0, len = pokemonLeft.length; i < len; i++) {
-    if (pokemonLeft[i].length) { return true; }
+    if (pokemonLeft[i].length) {
+      return true;
+    }
   }
   return false;
 };
@@ -145,25 +146,47 @@ let totalGuesses = 0;
 let correctGuesses = 0;
 const guessedWrong: Pokemon[] = [];
 
-const $options = $('.options').children();
-const $success = $('.success');
-const $failure = $('.failure');
-const $filler = $('.filler');
-const $score = $('.score');
-const $sprite = $('.pokemon-sprite');
-const $play = $('.play');
-$play.on('click', () => theCry.play());
-$play.jrumble();
+const query = <T extends Element>(selector: string): T => {
+  const element = document.querySelector<T>(selector);
+  if (!element) {
+    throw new Error('Missing required element: ' + selector);
+  }
+  return element;
+};
 
-$('.gen').on('click', function() {
-  const $gen = $(this);
-  $gen.toggleClass('enabled');
-  const gen = $gen.attr('data-gen') as string;
-  gens[parseInt(gen, 10) as Generation].enabled = $gen.hasClass('enabled');
-  updatePokemon();
+const optionsElement = query<HTMLDivElement>('.options');
+const optionElements = document.querySelectorAll<HTMLDivElement>('.option');
+const genElements = document.querySelectorAll<HTMLDivElement>('.gen');
+const successElement = query<HTMLHeadingElement>('.success');
+const failureElement = query<HTMLHeadingElement>('.failure');
+const fillerElement = query<HTMLHeadingElement>('.filler');
+const scoreElement = query<HTMLSpanElement>('.score');
+const spriteElement = query<HTMLImageElement>('.pokemon-sprite');
+const playElement = query<HTMLDivElement>('.play');
+
+const setHidden = (element: Element, hidden: boolean): void => {
+  element.classList.toggle('hidden', hidden);
+};
+
+const setRumble = (element: Element, active: boolean): void => {
+  element.classList.toggle('rumble', active);
+};
+
+playElement.addEventListener('click', () => {
+  theCry.play();
 });
 
-$('.gen-1').addClass('enabled');
+for (let i = 0, len = genElements.length; i < len; i++) {
+  const genElement = genElements[i];
+  genElement.addEventListener('click', () => {
+    genElement.classList.toggle('enabled');
+    const gen = genElement.getAttribute('data-gen') as string;
+    gens[parseInt(gen, 10) as Generation].enabled = genElement.classList.contains('enabled');
+    updatePokemon();
+  });
+}
+
+query<HTMLDivElement>('.gen-1').classList.add('enabled');
 
 // Returns `n` pokemon that are not the given pokemon.
 // Used to have them be shuffled in with the pokemon to be guessed.
@@ -186,7 +209,7 @@ const randomPokemonThatAreNot = (theid: string, n: number): Pokemon[] => {
 
 const shuffle = <T>(array: T[]): T[] => {
   let currentIndex = array.length;
-  let tmp, randomIndex;
+  let tmp: T, randomIndex: number;
 
   while (0 !== currentIndex) {
     randomIndex = ~~(Math.random() * currentIndex);
@@ -203,41 +226,38 @@ let thePokemon: Pokemon;
 let theCry: HTMLAudioElement;
 
 // Called whenever the user guesses on a pokemon.
-const guess = function(this: HTMLElement): void {
-  const $child = $(this);
+const guess = (option: HTMLDivElement): void => {
   totalGuesses++;
-  if ($child.data('species_id') === thePokemon.species_id) {
+  if (option.dataset.speciesId === thePokemon.species_id) {
     correctGuesses++;
-    $success.removeClass('hidden');
-    $failure.addClass('hidden');
-    $score.text(correctGuesses + ' / ' + totalGuesses);
-    $score.appendTo($success);
+    setHidden(successElement, false);
+    setHidden(failureElement, true);
+    scoreElement.textContent = correctGuesses + ' / ' + totalGuesses;
+    successElement.appendChild(scoreElement);
   } else {
     guessedWrong.push(thePokemon);
-    $success.addClass('hidden');
-    $failure.removeClass('hidden');
-    $score.text(correctGuesses + ' / ' + totalGuesses);
-    $score.appendTo($failure);
+    setHidden(successElement, true);
+    setHidden(failureElement, false);
+    scoreElement.textContent = correctGuesses + ' / ' + totalGuesses;
+    failureElement.appendChild(scoreElement);
   }
-  $filler.addClass('hidden');
+  setHidden(fillerElement, true);
 
   // Disable all buttons.
-  for (let i = 0, len = $options.length; i < len; i++) {
-    const $option = $($options[i]);
-    $option.addClass('disabled');
+  for (let i = 0, len = optionElements.length; i < len; i++) {
+    const optionElement = optionElements[i];
+    optionElement.classList.add('disabled');
 
     // Label the pokemon that was the answer.
-    if ($option.data('species_id') === thePokemon.species_id) {
-      $option.addClass('right');
+    if (optionElement.dataset.speciesId === thePokemon.species_id) {
+      optionElement.classList.add('right');
     }
-    $option.off('click', guess);
   }
 
   // Remove the play button and show the pokemon.
-  $play.addClass('hidden');
-  const src = thePokemon.sprite;
-  $sprite.attr('src', src);
-  $sprite.removeClass('hidden');
+  setHidden(playElement, true);
+  spriteElement.setAttribute('src', thePokemon.sprite);
+  setHidden(spriteElement, false);
 
   if (arePokemonLeft()) {
     setTimeout(nextRound, NEXT_ROUND_TIMEOUT);
@@ -246,18 +266,20 @@ const guess = function(this: HTMLElement): void {
   }
 };
 
+const startRumble = (): void => setRumble(playElement, true);
+const stopRumble = (): void => setRumble(playElement, false);
+
 const nextRound = (): void => {
   thePokemon = randomFromLists(pokemonLeft, true);
   let roundPokemons = randomPokemonThatAreNot(thePokemon.species_id, 3);
   roundPokemons.push(thePokemon);
   roundPokemons = shuffle(roundPokemons);
-  for (let i = 0, len = $options.length; i < len; i++) {
-    const $child = $($options[i]);
+  for (let i = 0, len = optionElements.length; i < len; i++) {
+    const optionElement = optionElements[i];
     const pokemon = roundPokemons[i];
-    $child.data('species_id', pokemon.species_id);
-    $child.text(pokemon.name || pokemon.identifier);
-    $child.removeClass('disabled right');
-    $child.on('click', guess);
+    optionElement.dataset.speciesId = pokemon.species_id;
+    optionElement.textContent = pokemon.name || pokemon.identifier;
+    optionElement.classList.remove('disabled', 'right');
   }
 
   theCry = new Audio(thePokemon.cry);
@@ -265,19 +287,16 @@ const nextRound = (): void => {
   theCry.autoplay = true;
   theCry.addEventListener('play', startRumble);
   theCry.addEventListener('ended', stopRumble);
-  $play.removeClass('hidden');
-  $sprite.addClass('hidden');
+  setHidden(playElement, false);
+  setHidden(spriteElement, true);
 };
-
-const startRumble = (): JQuery<HTMLElement> => $play.trigger('startRumble');
-const stopRumble = (): JQuery<HTMLElement> => $play.trigger('stopRumble');
 
 // Start the very first round in the beginning.
 nextRound();
 
 const displayEndScreen = (): void => {
-  const $endScreen = $('.end-screen');
-  $endScreen.removeClass('hidden');
+  const endScreen = query<HTMLDivElement>('.end-screen');
+  endScreen.classList.remove('hidden');
   const ping = new Audio('media/ping.mp3');
   ping.volume = VOLUME;
 
@@ -285,17 +304,33 @@ const displayEndScreen = (): void => {
     const pokemon = guessedWrong[i];
     const cry = new Audio(pokemon.cry);
     cry.volume = VOLUME;
-    const src = pokemon.sprite;
-    const $imgWrapper = $('<div><img class="pokemon-sprite" src="' + src + '" /></div>');
-    const $img = $imgWrapper.find('img');
-    $imgWrapper.attr('data-tooltip', pokemon.name || pokemon.identifier);
-    $img.jrumble();
-    cry.addEventListener('play', () => $img.trigger('startRumble'));
-    cry.addEventListener('ended', () => $img.trigger('stopRumble'));
-    $imgWrapper.on('click', () => cry.play());
+    const wrapper = document.createElement('div');
+    const image = document.createElement('img');
+    image.className = 'pokemon-sprite';
+    image.setAttribute('src', pokemon.sprite);
+    wrapper.setAttribute('data-tooltip', pokemon.name || pokemon.identifier);
+    cry.addEventListener('play', () => setRumble(image, true));
+    cry.addEventListener('ended', () => setRumble(image, false));
+    wrapper.addEventListener('click', () => cry.play());
+    wrapper.appendChild(image);
     setTimeout(() => {
       ping.play();
-      $endScreen.append($imgWrapper);
+      endScreen.appendChild(wrapper);
     }, (i + 1) * PING_TIMEOUT);
   }
 };
+
+// Called when the user clicks on one of the guesses.
+optionsElement.addEventListener('click', (event) => {
+  const target = event.target;
+  if (!(target instanceof Element)) {
+    return;
+  }
+
+  const option = target.closest<HTMLDivElement>('.option');
+  if (!option || option.classList.contains('disabled')) {
+    return;
+  }
+
+  guess(option);
+});

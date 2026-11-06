@@ -24,8 +24,3 @@ interface PokemonData {
 }
 
 declare const pokemon: PokemonData;
-
-interface JQuery {
-  jrumble(options?: any): JQuery;
-  trigger(eventName: 'startRumble' | 'stopRumble'): JQuery;
-}
