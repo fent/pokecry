@@ -1,4 +1,8 @@
 {
+  "scripts": {
+    "build": "node scripts/build.js",
+    "typecheck": "tsc --noEmit"
+  },
   "devDependencies": {
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^9.1.2",
