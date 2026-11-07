@@ -16,11 +16,15 @@ npm run build
 open dist/index.html
 ```
 
+`npm run check` runs the format check, lint, and type checks together.
+
 `npm run typecheck` checks the TypeScript without emitting files. `npm run lint`
 checks with ESLint, and `npm run lint:fix` applies its fixes. `npm run format`
-formats with Prettier, and `npm run format:check` verifies formatting without writing.
+formats with Prettier, and `npm run format:check` verifies formatting without
+writing.
+
+Pull requests run the same checks plus a production build in CI.
 
 ## Deployment
 
-Pushes to `main` are built by GitHub Actions and deployed as a GitHub Pages
-artifact.
+Pushes to `main` are checked, built, and deployed as a GitHub Pages artifact.
