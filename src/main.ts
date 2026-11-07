@@ -145,6 +145,7 @@ const fillerElement = requireElement<HTMLHeadingElement>('.filler');
 const scoreElement = requireElement<HTMLSpanElement>('.score');
 const spriteElement = requireElement<HTMLImageElement>('.pokemon-sprite');
 const playElement = requireElement<HTMLButtonElement>('.play');
+const endGameElement = requireElement<HTMLButtonElement>('.end-game');
 const statusElement = requireElement<HTMLParagraphElement>('.status');
 const endScreenElement = requireElement<HTMLDivElement>('.end-screen');
 
@@ -174,6 +175,10 @@ const displayName = (pokemon: Pokemon): string => pokemon.name || pokemon.identi
 
 playElement.addEventListener('click', () => {
   theCry.play();
+});
+
+endGameElement.addEventListener('click', () => {
+  displayEndScreen();
 });
 
 // Pick decoys that are not the answer, for the player to choose between.
@@ -213,6 +218,7 @@ let theCry: HTMLAudioElement;
 // Called whenever the user guesses on a pokemon.
 const guess = (option: HTMLButtonElement): void => {
   totalGuesses++;
+  setHidden(endGameElement, true);
   roundActive = false;
   const isCorrect = option.dataset.speciesId === thePokemon.species_id;
   restorePlayFocus = document.activeElement === option;
@@ -295,7 +301,13 @@ const nextRound = (): void => {
   theCry.autoplay = true;
   theCry.addEventListener('play', startRumble);
   theCry.addEventListener('ended', stopRumble);
+  theCry.addEventListener('ended', () => {
+    if (roundActive && totalGuesses > 0) {
+      setHidden(endGameElement, false);
+    }
+  });
   setHidden(playElement, false);
+  setHidden(endGameElement, true);
   playElement.disabled = false;
   if (restorePlayFocus) {
     playElement.focus();
@@ -306,16 +318,18 @@ const nextRound = (): void => {
 };
 
 const displayEndScreen = (): void => {
+  cancelReveal();
   if (showingEmptyState) {
     statusElement.textContent = '';
     showingEmptyState = false;
   }
   roundActive = false;
+  setHidden(endGameElement, true);
   clearEndScreenTimers();
   endScreenElement.replaceChildren();
   setHidden(endScreenElement, false);
   endScreenElement.tabIndex = -1;
-  endScreenElement.focus();
+  endScreenElement.focus({ preventScroll: true });
   const ping = new Audio('media/ping.mp3');
   ping.volume = VOLUME;
 

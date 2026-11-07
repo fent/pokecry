@@ -48,6 +48,7 @@ const endScreen = (): HTMLDivElement => document.querySelector<HTMLDivElement>('
 const score = (): HTMLSpanElement => document.querySelector<HTMLSpanElement>('.score')!;
 const status = (): HTMLParagraphElement => document.querySelector<HTMLParagraphElement>('.status')!;
 const allGens = (): HTMLButtonElement => document.querySelector<HTMLButtonElement>('.gen-all')!;
+const endGame = (): HTMLButtonElement => document.querySelector<HTMLButtonElement>('.end-game')!;
 const generationButtons = (): HTMLButtonElement[] =>
   Array.from(document.querySelectorAll<HTMLButtonElement>('.gen[data-gen]'));
 const filler = (): HTMLHeadingElement => document.querySelector<HTMLHeadingElement>('.filler')!;
@@ -390,6 +391,42 @@ describe('pokecry', () => {
 
     expect(endScreen().querySelectorAll('.end-pokemon')).toHaveLength(0);
 
+    currentAudio().emit('ended');
+    expect(endGame().classList.contains('hidden')).toBe(false);
+  });
+
+  it('shows end game only after the next cry finishes', async () => {
+    await start();
+    currentAudio().emit('ended');
+    expect(endGame().classList.contains('hidden')).toBe(true);
+
+    guessCorrect();
+    expect(endGame().classList.contains('hidden')).toBe(true);
+
+    advanceRound();
+    expect(endGame().classList.contains('hidden')).toBe(true);
+
+    currentAudio().emit('ended');
+    expect(endGame().classList.contains('hidden')).toBe(false);
+  });
+
+  it('ends the game on demand with the wrong answers', async () => {
+    await start();
+    guessWrong();
+    advanceRound();
+    currentAudio().emit('ended');
+    const focus = vi.spyOn(endScreen(), 'focus');
+    endGame().click();
+
+    expect(focus).toHaveBeenCalledWith({ preventScroll: true });
+    expect(endScreen().classList.contains('hidden')).toBe(false);
+    expect(endGame().classList.contains('hidden')).toBe(true);
+
+    vi.advanceTimersByTime(REVEAL_TIMEOUT);
+
+    expect(endScreen().classList.contains('hidden')).toBe(false);
+    expect(endScreen().querySelectorAll('.end-pokemon')).toHaveLength(1);
+    expect(status().textContent).toContain('Wrong');
   });
 
   it('continues with a new generation after one is exhausted', async () => {

@@ -162,9 +162,26 @@ button {
 .play:focus-visible,
 .option:focus-visible,
 .gen:focus-visible,
-.end-pokemon:focus-visible {
+.end-pokemon:focus-visible,
+.end-game:focus-visible {
   outline: 3px solid var(--focus);
   outline-offset: 3px;
+}
+
+.end-game {
+  margin-top: 20px;
+  padding: 0.15em 1em;
+  border: 1px solid var(--muted-strong);
+  border-radius: 30px;
+  background: transparent;
+  color: var(--muted-strong);
+  font-size: 0.8em;
+  cursor: pointer;
+}
+
+.end-game:hover {
+  color: var(--paper);
+  background: var(--ink);
 }
 
 .gens-title {
@@ -242,8 +259,9 @@ button {
   position: absolute;
   top: 50px;
   left: 50px;
+  bottom: 0;
   width: calc(100% - 200px);
-  height: 100%;
+  overflow-y: auto;
 }
 
 .end-pokemon {
