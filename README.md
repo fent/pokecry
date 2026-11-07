@@ -32,3 +32,7 @@ production build. Coverage is uploaded to Codecov from CI.
 
 Pushes to `main` are checked, tested, built, and deployed as a GitHub Pages
 artifact.
+
+## License
+
+[MIT](LICENSE)
