@@ -206,6 +206,13 @@ describe('pokecry', () => {
     expect(getComputedStyle(playButton()).display).toBe('none');
   });
 
+  it('uses a larger desktop sprite', () => {
+    loadStyles();
+
+    expect(getComputedStyle(sprite()).width).toBe('120px');
+    expect(getComputedStyle(sprite()).height).toBe('110px');
+  });
+
   it('ignores clicks that are not on an option', async () => {
     await start();
     const optionsElement = document.querySelector<HTMLDivElement>('.options')!;
