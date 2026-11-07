@@ -16,7 +16,9 @@ npm run build
 open dist/index.html
 ```
 
-`npm run typecheck` checks the TypeScript without emitting files.
+`npm run typecheck` checks the TypeScript without emitting files. `npm run lint`
+checks with ESLint, and `npm run lint:fix` applies its fixes. `npm run format`
+formats with Prettier, and `npm run format:check` verifies formatting without writing.
 
 ## Deployment
 

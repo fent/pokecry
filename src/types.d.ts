@@ -1,4 +1,3 @@
-
 interface PokemonDef {
   species_id: string;
   identifier: string;

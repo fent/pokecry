@@ -1,0 +1,6 @@
+# Generated or vendor content
+dist
+node_modules
+package-lock.json
+data/pokemon.js
+media

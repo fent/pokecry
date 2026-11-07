@@ -1,4 +1,3 @@
-/* eslint-env node */
 const { execFileSync } = require('node:child_process');
 const { cpSync, mkdirSync, rmSync } = require('node:fs');
 const { join } = require('node:path');

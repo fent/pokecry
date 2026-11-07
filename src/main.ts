@@ -77,7 +77,8 @@ for (const gen in gens) {
     let crypath: string = pkm.species_id;
 
     const formsAvailable =
-      pkm.forms && (pkm.formSprites == null || pkm.formSprites) &&
+      pkm.forms &&
+      (pkm.formSprites == null || pkm.formSprites) &&
       pkm.forms.filter((form) => form[0] !== '!');
 
     // 50/50 to select another form.
@@ -313,10 +314,13 @@ const displayEndScreen = (): void => {
     cry.addEventListener('ended', () => setRumble(image, false));
     wrapper.addEventListener('click', () => cry.play());
     wrapper.appendChild(image);
-    setTimeout(() => {
-      ping.play();
-      endScreen.appendChild(wrapper);
-    }, (i + 1) * PING_TIMEOUT);
+    setTimeout(
+      () => {
+        ping.play();
+        endScreen.appendChild(wrapper);
+      },
+      (i + 1) * PING_TIMEOUT,
+    );
   }
 };
 
