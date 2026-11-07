@@ -1,4 +1,4 @@
-const NEXT_ROUND_TIMEOUT = 600;
+const REVEAL_TIMEOUT = 1200;
 const PING_TIMEOUT = 600;
 const VOLUME = 0.5;
 
@@ -241,7 +241,7 @@ const guess = (option: HTMLButtonElement): void => {
   setHidden(spriteElement, false);
 
   if (arePokemonLeft()) {
-    setTimeout(nextRound, NEXT_ROUND_TIMEOUT);
+    setTimeout(nextRound, REVEAL_TIMEOUT);
   } else {
     displayEndScreen();
   }

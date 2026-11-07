@@ -35,7 +35,7 @@ class FakeAudio {
   }
 }
 
-const ROUND_TIMEOUT = 600;
+const REVEAL_TIMEOUT = 1200;
 
 let audios: FakeAudio[] = [];
 
@@ -85,7 +85,7 @@ const start = async (): Promise<void> => {
 };
 
 const advanceRound = (): void => {
-  vi.advanceTimersByTime(ROUND_TIMEOUT);
+  vi.advanceTimersByTime(REVEAL_TIMEOUT);
 };
 
 const gen1Count = (): number =>
@@ -222,6 +222,17 @@ describe('pokecry', () => {
     document.querySelector('.play')?.remove();
 
     await expect(start()).rejects.toThrow('Missing required element: .play');
+  });
+
+  it('keeps the answer visible longer before the next round', async () => {
+    await start();
+    guessCorrect();
+
+    vi.advanceTimersByTime(600);
+    expect(playButton().classList.contains('hidden')).toBe(true);
+
+    vi.advanceTimersByTime(REVEAL_TIMEOUT - 600);
+    expect(playButton().classList.contains('hidden')).toBe(false);
   });
 
   it('starts the next round after the timeout', async () => {
