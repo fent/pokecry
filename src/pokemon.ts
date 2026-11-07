@@ -1,4 +1,37 @@
-let pokemon = window.pokemon = {};
+interface PokemonDef {
+  species_id: string;
+  identifier: string;
+  name?: string;
+  forms?: string[];
+  formSounds?: boolean;
+  formSprites?: boolean;
+}
+
+interface Pokemon extends PokemonDef {
+  sprite: string;
+  cry: string;
+}
+
+interface PokemonData {
+  gen1: PokemonDef[];
+  gen2: PokemonDef[];
+  gen3: PokemonDef[];
+  gen4: PokemonDef[];
+  gen5: PokemonDef[];
+  gen6: PokemonDef[];
+  gen7: PokemonDef[];
+}
+
+const pokemon: PokemonData = {
+  gen1: [],
+  gen2: [],
+  gen3: [],
+  gen4: [],
+  gen5: [],
+  gen6: [],
+  gen7: [],
+};
+
 pokemon.gen1 = [
   {
     "species_id": "1",
@@ -1947,7 +1980,7 @@ pokemon.gen4 = [
     "species_id": "479",
     "identifier": "rotom",
     "forms": ["fan", "frost", "heat", "mow", "wash"],
-    "formSounds" : false
+    "formSounds": false
   },
   {
     "species_id": "480",
@@ -2389,13 +2422,13 @@ pokemon.gen5 = [
     "species_id": "585",
     "identifier": "deerling",
     "forms": ["autumn", "!spring", "summer", "winter"],
-    "formSoun": false
+    "formSounds": false
   },
   {
     "species_id": "586",
     "identifier": "sawsbuck",
     "forms": ["autumn", "!spring", "summer", "winter"],
-    "formSoun": false
+    "formSounds": false
   },
   {
     "species_id": "587",
@@ -3338,3 +3371,5 @@ pokemon.gen7 = [
     "identifier": "marshadow"
   },
 ];
+
+Object.assign(window, { pokemon });

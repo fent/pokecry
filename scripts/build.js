@@ -15,6 +15,6 @@ execFileSync(process.execPath, [require.resolve('typescript/bin/tsc')], {
 
 cpSync(join(root, 'index.html'), join(outDir, 'index.html'));
 
-for (const directory of ['data', 'media', 'style']) {
+for (const directory of ['media', 'style']) {
   cpSync(join(root, directory), join(outDir, directory), { recursive: true });
 }

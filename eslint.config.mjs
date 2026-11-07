@@ -4,14 +4,14 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['dist', 'node_modules', 'data/pokemon.js', 'media'] },
+  { ignores: ['dist', 'node_modules', 'media', 'src/pokemon.ts'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
     files: ['src/**/*.ts'],
     languageOptions: {
       ecmaVersion: 'latest',
-      sourceType: 'module',
+      sourceType: 'script',
       globals: {
         ...globals.browser,
         pokemon: 'readonly',

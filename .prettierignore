@@ -2,5 +2,5 @@
 dist
 node_modules
 package-lock.json
-data/pokemon.js
+src/pokemon.ts
 media
