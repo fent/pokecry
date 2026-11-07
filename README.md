@@ -12,19 +12,23 @@ Requires Node.js 22 or newer.
 
 ```sh
 npm install
+npm test
 npm run build
 open dist/index.html
 ```
 
 `npm run check` runs the format check, lint, and type checks together.
+`npm run test:coverage` runs the tests and writes an lcov report to `coverage/`.
 
 `npm run typecheck` checks the TypeScript without emitting files. `npm run lint`
 checks with ESLint, and `npm run lint:fix` applies its fixes. `npm run format`
 formats with Prettier, and `npm run format:check` verifies formatting without
 writing.
 
-Pull requests run the same checks plus a production build in CI.
+CI runs on pull requests and pushes to `main`, covering the checks, tests, and a
+production build. Coverage is uploaded to Codecov from CI.
 
 ## Deployment
 
-Pushes to `main` are checked, built, and deployed as a GitHub Pages artifact.
+Pushes to `main` are checked, tested, built, and deployed as a GitHub Pages
+artifact.

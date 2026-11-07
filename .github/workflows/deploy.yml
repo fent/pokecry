@@ -25,6 +25,7 @@ jobs:
 
       - run: npm ci
       - run: npm run check
+      - run: npm run test:coverage
       - run: npm run build
 
       - uses: actions/configure-pages@v6

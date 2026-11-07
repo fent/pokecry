@@ -4,7 +4,7 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['dist', 'node_modules', 'media', 'src/pokemon.ts'] },
+  { ignores: ['dist', 'node_modules', 'media', 'coverage', 'src/pokemon.ts'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
@@ -37,6 +37,20 @@ export default tseslint.config(
     },
     rules: {
       '@typescript-eslint/no-require-imports': 'off',
+    },
+  },
+  {
+    files: ['tests/**/*.ts', 'vitest.config.mts'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+      },
+    },
+    rules: {
+      'no-console': ['error', { allow: ['warn', 'error'] }],
     },
   },
   prettier,

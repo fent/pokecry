@@ -1,6 +1,7 @@
 # Generated or vendor content
 dist
 node_modules
+coverage
 package-lock.json
 src/pokemon.ts
 media
