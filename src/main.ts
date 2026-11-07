@@ -4,96 +4,70 @@ const VOLUME = 0.5;
 
 type Generation = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
-interface GenData {
-  enabled: boolean;
+interface GenerationPaths {
   spritesDir: string;
   criesDir: string;
   criesExt?: string;
+}
+
+interface GenerationConfig extends GenerationPaths {
+  enabled: boolean;
+}
+
+interface GenData extends GenerationConfig {
   pokemon: Pokemon[];
   pokemonLeft: Pokemon[];
 }
 
+const enrichPokemon = (def: PokemonDef, paths: GenerationPaths): Pokemon => {
+  let spriteId = def.species_id;
+  let cryId = def.species_id;
+
+  const formsAvailable =
+    def.formSprites === false ? [] : (def.forms ?? []).filter((form) => form[0] !== '!');
+
+  // 50/50 to select another form.
+  if (formsAvailable.length > 0 && Math.random() > 0.5) {
+    const form = formsAvailable[Math.floor(Math.random() * formsAvailable.length)];
+    const formName = form.replace(/^@/, '');
+    spriteId += `-${formName}`;
+    if (def.formSounds || form.startsWith('@')) {
+      cryId += `-${formName}`;
+    }
+  }
+
+  return {
+    ...def,
+    sprite: `media/sprites/${paths.spritesDir}/${spriteId}.png`,
+    cry: `media/cries${paths.criesDir}/${cryId}${paths.criesExt ?? '.mp3'}`,
+  };
+};
+
+const createGeneration = (defs: PokemonDef[], config: GenerationConfig): GenData => {
+  const list = defs.map((def) => enrichPokemon(def, config));
+  return { ...config, pokemon: list, pokemonLeft: list.slice() };
+};
+
 // For every generation, keep a copy of all pokemon and the pokemon
 // that are left to be guessed from that generation.
 const gens: Record<Generation, GenData> = {
-  1: {
-    enabled: true,
-    spritesDir: 'yellow',
-    criesDir: '/old',
-    pokemon: pokemon.gen1.slice() as Pokemon[],
-    pokemonLeft: [],
-  },
-  2: {
-    enabled: false,
-    spritesDir: 'crystal',
-    criesDir: '/old',
-    pokemon: pokemon.gen2.slice() as Pokemon[],
-    pokemonLeft: [],
-  },
-  3: {
-    enabled: false,
-    spritesDir: 'emerald',
-    criesDir: '/old',
-    pokemon: pokemon.gen3.slice() as Pokemon[],
-    pokemonLeft: [],
-  },
-  4: {
-    enabled: false,
-    spritesDir: 'platinum',
-    criesDir: '/old',
-    pokemon: pokemon.gen4.slice() as Pokemon[],
-    pokemonLeft: [],
-  },
-  5: {
+  1: createGeneration(pokemon.gen1, { enabled: true, spritesDir: 'yellow', criesDir: '/old' }),
+  2: createGeneration(pokemon.gen2, { enabled: false, spritesDir: 'crystal', criesDir: '/old' }),
+  3: createGeneration(pokemon.gen3, { enabled: false, spritesDir: 'emerald', criesDir: '/old' }),
+  4: createGeneration(pokemon.gen4, { enabled: false, spritesDir: 'platinum', criesDir: '/old' }),
+  5: createGeneration(pokemon.gen5, {
     enabled: false,
     spritesDir: 'black-white',
     criesDir: '/old',
-    pokemon: pokemon.gen5.slice() as Pokemon[],
-    pokemonLeft: [],
-  },
-  6: {
-    enabled: false,
-    spritesDir: 'x-y',
-    criesDir: '',
-    pokemon: pokemon.gen6.slice() as Pokemon[],
-    pokemonLeft: [],
-  },
-  7: {
+  }),
+  6: createGeneration(pokemon.gen6, { enabled: false, spritesDir: 'x-y', criesDir: '' }),
+  7: createGeneration(pokemon.gen7, {
     enabled: false,
     spritesDir: 'sun-moon',
     criesDir: '',
     criesExt: '.wav',
-    pokemon: pokemon.gen7.slice() as Pokemon[],
-    pokemonLeft: [],
-  },
+  }),
 };
-
-// Construct paths for audio and sprites.
-for (const gen in gens) {
-  const d = gens[gen as unknown as Generation];
-  for (let i = 0, len = d.pokemon.length; i < len; i++) {
-    const pkm = d.pokemon[i];
-    let spritepath: string = pkm.species_id;
-    let crypath: string = pkm.species_id;
-
-    const formsAvailable =
-      pkm.forms &&
-      (pkm.formSprites == null || pkm.formSprites) &&
-      pkm.forms.filter((form) => form[0] !== '!');
-
-    // 50/50 to select another form.
-    let form: string | undefined;
-    if (formsAvailable && formsAvailable.length && Math.random() > 0.5) {
-      form = formsAvailable[~~(Math.random() * formsAvailable.length)];
-      spritepath += '-' + form.replace(/^@/, '');
-      if (pkm.formSounds || (form && form[0] === '@')) crypath += '-' + form.replace(/^@/, '');
-    }
-
-    pkm.sprite = 'media/sprites/' + d.spritesDir + '/' + spritepath + '.png';
-    pkm.cry = 'media/cries' + d.criesDir + '/' + crypath + (d.criesExt || '.mp3');
-  }
-  d.pokemonLeft = d.pokemon.slice();
-}
 
 // Gets a list of lists of pokemon from all enabled generations.
 const getPokemon = (key: 'pokemon' | 'pokemonLeft'): Pokemon[][] => {
@@ -148,7 +122,7 @@ let correctGuesses = 0;
 let restorePlayFocus = false;
 const guessedWrong: Pokemon[] = [];
 
-const query = <T extends Element>(selector: string): T => {
+const requireElement = <T extends Element>(selector: string): T => {
   const element = document.querySelector<T>(selector);
   if (!element) {
     throw new Error('Missing required element: ' + selector);
@@ -156,16 +130,16 @@ const query = <T extends Element>(selector: string): T => {
   return element;
 };
 
-const optionsElement = query<HTMLDivElement>('.options');
+const optionsElement = requireElement<HTMLDivElement>('.options');
 const optionElements = document.querySelectorAll<HTMLButtonElement>('.option');
 const genElements = document.querySelectorAll<HTMLButtonElement>('.gen');
-const successElement = query<HTMLHeadingElement>('.success');
-const failureElement = query<HTMLHeadingElement>('.failure');
-const fillerElement = query<HTMLHeadingElement>('.filler');
-const scoreElement = query<HTMLSpanElement>('.score');
-const spriteElement = query<HTMLImageElement>('.pokemon-sprite');
-const playElement = query<HTMLButtonElement>('.play');
-const statusElement = query<HTMLParagraphElement>('.status');
+const successElement = requireElement<HTMLHeadingElement>('.success');
+const failureElement = requireElement<HTMLHeadingElement>('.failure');
+const fillerElement = requireElement<HTMLHeadingElement>('.filler');
+const scoreElement = requireElement<HTMLSpanElement>('.score');
+const spriteElement = requireElement<HTMLImageElement>('.pokemon-sprite');
+const playElement = requireElement<HTMLButtonElement>('.play');
+const statusElement = requireElement<HTMLParagraphElement>('.status');
 
 const setHidden = (element: Element, hidden: boolean): void => {
   element.classList.toggle('hidden', hidden);
@@ -193,23 +167,20 @@ for (let i = 0, len = genElements.length; i < len; i++) {
   });
 }
 
-// Returns `n` pokemon that are not the given pokemon.
-// Used to have them be shuffled in with the pokemon to be guessed.
-const randomPokemonThatAreNot = (theid: string, n: number): Pokemon[] => {
-  const pokemons: Pokemon[] = [];
-  const pokemonsHash: Record<string, boolean> = {};
-  pokemonsHash[theid] = true;
+// Pick decoys that are not the answer, for the player to choose between.
+const pickDecoyPokemon = (speciesId: string, count: number): Pokemon[] => {
+  const seenIds = new Set([speciesId]);
+  const decoys: Pokemon[] = [];
 
-  for (let i = 0; i < n; i++) {
-    let pokemon: Pokemon;
-    do {
-      pokemon = randomFromLists(allPokemon, false);
-    } while (pokemonsHash[pokemon.species_id] === true);
-    pokemons.push(pokemon);
-    pokemonsHash[pokemon.species_id] = true;
+  while (decoys.length < count) {
+    const candidate = randomFromLists(allPokemon, false);
+    if (!seenIds.has(candidate.species_id)) {
+      seenIds.add(candidate.species_id);
+      decoys.push(candidate);
+    }
   }
 
-  return pokemons;
+  return decoys;
 };
 
 const shuffle = <T>(array: T[]): T[] => {
@@ -281,7 +252,7 @@ const stopRumble = (): void => setRumble(playElement, false);
 
 const nextRound = (): void => {
   thePokemon = randomFromLists(pokemonLeft, true);
-  let roundPokemons = randomPokemonThatAreNot(thePokemon.species_id, 3);
+  let roundPokemons = pickDecoyPokemon(thePokemon.species_id, 3);
   roundPokemons.push(thePokemon);
   roundPokemons = shuffle(roundPokemons);
   for (let i = 0, len = optionElements.length; i < len; i++) {
@@ -311,7 +282,7 @@ const nextRound = (): void => {
 nextRound();
 
 const displayEndScreen = (): void => {
-  const endScreen = query<HTMLDivElement>('.end-screen');
+  const endScreen = requireElement<HTMLDivElement>('.end-screen');
   endScreen.classList.remove('hidden');
   endScreen.tabIndex = -1;
   endScreen.focus();

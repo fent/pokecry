@@ -2,9 +2,14 @@
   --ink: #000;
   --paper: #fff;
   --muted: #dcdcdc;
+  --border: #333;
+  --muted-strong: grey;
   --success: green;
   --failure: red;
   --focus: #1a73e8;
+  --ribbon: #121621;
+  --ribbon-shadow: rgb(0 0 0 / 30%);
+  --tooltip-bg: hsla(0, 0%, 20%, 0.9);
 }
 
 *,
@@ -50,7 +55,7 @@ button {
   width: 200px;
   padding: 6px 0;
   transform: rotate(45deg);
-  background: #121621;
+  background: var(--ribbon);
   color: var(--paper);
   font:
     700 13px/1.4 'Helvetica Neue',
@@ -60,7 +65,7 @@ button {
   text-align: center;
   text-decoration: none;
   white-space: nowrap;
-  box-shadow: 0 2px 4px rgb(0 0 0 / 30%);
+  box-shadow: 0 2px 4px var(--ribbon-shadow);
 }
 
 .github-ribbon a:focus-visible {
@@ -125,7 +130,7 @@ button {
   width: calc(100% - 6px);
   margin: 3px;
   padding: 0;
-  border: 1px solid #333;
+  border: 1px solid var(--border);
   border-radius: 30px;
   background: transparent;
   cursor: pointer;
@@ -146,7 +151,7 @@ button {
 
 .option:active:not(:disabled),
 .gens .gen:active {
-  color: grey;
+  color: var(--muted-strong);
 }
 
 .play:focus-visible,
@@ -165,7 +170,7 @@ button {
   display: inline-block;
   width: 32px;
   padding: 0;
-  border: 1px solid grey;
+  border: 1px solid var(--muted-strong);
   border-radius: 5px;
   background: transparent;
   cursor: pointer;
@@ -194,10 +199,10 @@ button {
   padding: 5px;
   border: 1px solid var(--ink);
   border-radius: 5px;
-  background: hsla(0, 0%, 20%, 0.9);
+  background: var(--tooltip-bg);
   color: var(--paper);
   text-align: center;
-  filter: drop-shadow(2px 2px 2px hsla(0, 0%, 20%, 0.9));
+  filter: drop-shadow(2px 2px 2px var(--tooltip-bg));
   white-space: nowrap;
 }
 
@@ -208,7 +213,7 @@ button {
   width: 0;
   margin-left: -5px;
   margin-bottom: 5px;
-  border-top: 5px solid hsla(0, 0%, 20%, 0.9);
+  border-top: 5px solid var(--tooltip-bg);
   border-right: 5px solid transparent;
   border-left: 5px solid transparent;
   content: ' ';
