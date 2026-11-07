@@ -116,6 +116,11 @@ button {
   display: none;
 }
 
+.play:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
 .pokemon-sprite {
   width: 120px;
   height: 110px;
@@ -174,6 +179,10 @@ button {
   border-radius: 5px;
   background: transparent;
   cursor: pointer;
+}
+
+.gens .gen-all {
+  width: 40px;
 }
 
 [data-tooltip] {

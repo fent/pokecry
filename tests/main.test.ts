@@ -47,6 +47,10 @@ const sprite = (): HTMLImageElement => document.querySelector<HTMLImageElement>(
 const endScreen = (): HTMLDivElement => document.querySelector<HTMLDivElement>('.end-screen')!;
 const score = (): HTMLSpanElement => document.querySelector<HTMLSpanElement>('.score')!;
 const status = (): HTMLParagraphElement => document.querySelector<HTMLParagraphElement>('.status')!;
+const allGens = (): HTMLButtonElement => document.querySelector<HTMLButtonElement>('.gen-all')!;
+const generationButtons = (): HTMLButtonElement[] =>
+  Array.from(document.querySelectorAll<HTMLButtonElement>('.gen[data-gen]'));
+const filler = (): HTMLHeadingElement => document.querySelector<HTMLHeadingElement>('.filler')!;
 
 const currentAudio = (): FakeAudio => {
   const cry = [...audios].reverse().find((audio) => audio.src !== 'media/ping.mp3');
@@ -117,6 +121,8 @@ beforeEach(() => {
 afterEach(() => {
   vi.useRealTimers();
   vi.unstubAllGlobals();
+  delete (window as unknown as { __POKECRY_TEST__?: boolean }).__POKECRY_TEST__;
+  delete (window as unknown as { __pokecryTest?: unknown }).__pokecryTest;
   document.body.innerHTML = '';
   document.head.innerHTML = '';
 });
@@ -270,6 +276,68 @@ describe('pokecry', () => {
     expect(gen2!.getAttribute('aria-pressed')).toBe('false');
   });
 
+  it('selects and unselects all generations', async () => {
+    await start();
+    expect(allGens().getAttribute('aria-pressed')).toBe('mixed');
+
+    allGens().click();
+    expect(allGens().getAttribute('aria-pressed')).toBe('true');
+    expect(
+      generationButtons().every((button) => button.getAttribute('aria-pressed') === 'true'),
+    ).toBe(true);
+
+    allGens().click();
+    expect(allGens().getAttribute('aria-pressed')).toBe('false');
+    expect(
+      generationButtons().every((button) => button.getAttribute('aria-pressed') === 'false'),
+    ).toBe(true);
+    expect(playButton().disabled).toBe(true);
+    expect(playButton().classList.contains('hidden')).toBe(false);
+    expect(document.querySelector('.options')?.classList.contains('hidden')).toBe(false);
+    expect(options().every((option) => option.disabled)).toBe(true);
+    expect(options().every((option) => option.textContent)).toBe(true);
+    expect(filler().textContent).toBe('Select at least one generation');
+    expect(status().textContent).toBe('Select at least one generation to play.');
+
+    allGens().click();
+    expect(allGens().getAttribute('aria-pressed')).toBe('true');
+    expect(playButton().disabled).toBe(false);
+    expect(playButton().classList.contains('hidden')).toBe(false);
+    expect(options().every((option) => !option.disabled)).toBe(true);
+    expect(document.querySelector('.options')?.classList.contains('hidden')).toBe(false);
+    expect(status().textContent).toBe('');
+  });
+
+  it('does not cut the reveal short when generations change', async () => {
+    await start();
+    guessCorrect();
+    const gen2 = document.querySelector<HTMLButtonElement>('.gen-2')!;
+    gen2.click();
+
+    expect(playButton().classList.contains('hidden')).toBe(true);
+
+    vi.advanceTimersByTime(REVEAL_TIMEOUT - 600);
+    expect(playButton().classList.contains('hidden')).toBe(true);
+
+    vi.advanceTimersByTime(600);
+    expect(playButton().classList.contains('hidden')).toBe(false);
+  });
+
+  it('pauses when all generations are turned off during a reveal', async () => {
+    await start();
+    guessCorrect();
+
+    allGens().click();
+    allGens().click();
+    expect(filler().textContent).toBe('Select at least one generation');
+
+    vi.advanceTimersByTime(REVEAL_TIMEOUT);
+    expect(playButton().disabled).toBe(true);
+
+    allGens().click();
+    expect(playButton().disabled).toBe(false);
+  });
+
   it('shows the end screen after every generation-1 Pokemon', async () => {
     await start();
     const total = gen1Count();
@@ -280,6 +348,60 @@ describe('pokecry', () => {
     expect(endScreen().classList.contains('hidden')).toBe(false);
     expect(document.activeElement).toBe(endScreen());
     expect(endScreen().children).toHaveLength(0);
+  });
+
+  it('keeps the end screen when the selected generation is exhausted', async () => {
+    await start();
+    playRounds(gen1Count());
+    expect(endScreen().classList.contains('hidden')).toBe(false);
+
+    const gen1 = document.querySelector<HTMLButtonElement>('.gen-1')!;
+    gen1.click();
+    expect(endScreen().classList.contains('hidden')).toBe(true);
+
+    gen1.click();
+    expect(endScreen().classList.contains('hidden')).toBe(false);
+    expect(status().textContent).toBe('');
+  });
+
+  it('does not crash when the last playable generation is disabled during a reveal', async () => {
+    await start();
+    playRounds(gen1Count());
+
+    const gen2 = document.querySelector<HTMLButtonElement>('.gen-2')!;
+    gen2.click();
+    guessCorrect();
+    gen2.click();
+
+    vi.advanceTimersByTime(REVEAL_TIMEOUT);
+
+    expect(endScreen().classList.contains('hidden')).toBe(false);
+  });
+
+  it('clears pending end-screen timers when a new round starts', async () => {
+    await start();
+    guessWrong();
+    advanceRound();
+    playRounds(gen1Count() - 1);
+
+    const gen2 = document.querySelector<HTMLButtonElement>('.gen-2')!;
+    gen2.click();
+    vi.advanceTimersByTime(REVEAL_TIMEOUT);
+
+    expect(endScreen().querySelectorAll('.end-pokemon')).toHaveLength(0);
+
+  });
+
+  it('continues with a new generation after one is exhausted', async () => {
+    await start();
+    playRounds(gen1Count());
+
+    const gen2 = document.querySelector<HTMLButtonElement>('.gen-2')!;
+    gen2.click();
+
+    expect(playButton().classList.contains('hidden')).toBe(false);
+    expect(options().every((option) => !option.disabled)).toBe(true);
+    expect(options().every((option) => option.textContent)).toBe(true);
   });
 
   it('shows wrong answers on the end screen and plays their cry', async () => {
@@ -308,5 +430,24 @@ describe('pokecry', () => {
     expect(image.classList.contains('rumble')).toBe(true);
     endAudio!.emit('ended');
     expect(image.classList.contains('rumble')).toBe(false);
+  });
+
+  it('falls back to the end screen when a round has no Pokemon left', async () => {
+    (window as unknown as { __POKECRY_TEST__: boolean }).__POKECRY_TEST__ = true;
+    await start();
+
+    const hooks = (
+      window as unknown as {
+        __pokecryTest: {
+          nextRound: () => void;
+          setPokemonLeft: (lists: unknown[]) => void;
+        };
+      }
+    ).__pokecryTest;
+
+    hooks.setPokemonLeft([]);
+    hooks.nextRound();
+
+    expect(endScreen().classList.contains('hidden')).toBe(false);
   });
 });

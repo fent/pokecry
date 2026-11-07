@@ -97,8 +97,9 @@ updatePokemon();
 // Gets a random pokemon from a list of lists, which will be either
 // all pokemon from enabled generations, or all pokemon that are left.
 const randomFromLists = (lists: Pokemon[][], remove: boolean): Pokemon => {
-  const list = lists[~~(Math.random() * lists.length)];
-  const index = ~~(Math.random() * list.length);
+  const available = lists.filter((list) => list.length > 0);
+  const list = available[Math.floor(Math.random() * available.length)];
+  const index = Math.floor(Math.random() * list.length);
   const pkm = list[index];
   if (remove) {
     list.splice(index, 1);
@@ -120,6 +121,10 @@ const arePokemonLeft = (): boolean => {
 let totalGuesses = 0;
 let correctGuesses = 0;
 let restorePlayFocus = false;
+let roundActive = false;
+let revealTimer: number | undefined;
+let showingEmptyState = false;
+const endScreenTimers: number[] = [];
 const guessedWrong: Pokemon[] = [];
 
 const requireElement = <T extends Element>(selector: string): T => {
@@ -132,7 +137,8 @@ const requireElement = <T extends Element>(selector: string): T => {
 
 const optionsElement = requireElement<HTMLDivElement>('.options');
 const optionElements = document.querySelectorAll<HTMLButtonElement>('.option');
-const genElements = document.querySelectorAll<HTMLButtonElement>('.gen');
+const genElements = document.querySelectorAll<HTMLButtonElement>('.gen[data-gen]');
+const allGensElement = requireElement<HTMLButtonElement>('.gen-all');
 const successElement = requireElement<HTMLHeadingElement>('.success');
 const failureElement = requireElement<HTMLHeadingElement>('.failure');
 const fillerElement = requireElement<HTMLHeadingElement>('.filler');
@@ -140,6 +146,7 @@ const scoreElement = requireElement<HTMLSpanElement>('.score');
 const spriteElement = requireElement<HTMLImageElement>('.pokemon-sprite');
 const playElement = requireElement<HTMLButtonElement>('.play');
 const statusElement = requireElement<HTMLParagraphElement>('.status');
+const endScreenElement = requireElement<HTMLDivElement>('.end-screen');
 
 const setHidden = (element: Element, hidden: boolean): void => {
   element.classList.toggle('hidden', hidden);
@@ -149,23 +156,25 @@ const setRumble = (element: Element, active: boolean): void => {
   element.classList.toggle('rumble', active);
 };
 
+const clearEndScreenTimers = (): void => {
+  for (const timer of endScreenTimers) {
+    window.clearTimeout(timer);
+  }
+  endScreenTimers.length = 0;
+};
+
+const cancelReveal = (): void => {
+  if (revealTimer !== undefined) {
+    window.clearTimeout(revealTimer);
+    revealTimer = undefined;
+  }
+};
+
 const displayName = (pokemon: Pokemon): string => pokemon.name || pokemon.identifier;
 
 playElement.addEventListener('click', () => {
   theCry.play();
 });
-
-for (let i = 0, len = genElements.length; i < len; i++) {
-  const genElement = genElements[i];
-  const generation = Number(genElement.dataset.gen) as Generation;
-  genElement.setAttribute('aria-pressed', String(gens[generation].enabled));
-  genElement.addEventListener('click', () => {
-    const data = gens[generation];
-    data.enabled = !data.enabled;
-    genElement.setAttribute('aria-pressed', String(data.enabled));
-    updatePokemon();
-  });
-}
 
 // Pick decoys that are not the answer, for the player to choose between.
 const pickDecoyPokemon = (speciesId: string, count: number): Pokemon[] => {
@@ -204,6 +213,7 @@ let theCry: HTMLAudioElement;
 // Called whenever the user guesses on a pokemon.
 const guess = (option: HTMLButtonElement): void => {
   totalGuesses++;
+  roundActive = false;
   const isCorrect = option.dataset.speciesId === thePokemon.species_id;
   restorePlayFocus = document.activeElement === option;
   if (isCorrect) {
@@ -241,7 +251,7 @@ const guess = (option: HTMLButtonElement): void => {
   setHidden(spriteElement, false);
 
   if (arePokemonLeft()) {
-    setTimeout(nextRound, REVEAL_TIMEOUT);
+    revealTimer = window.setTimeout(nextRound, REVEAL_TIMEOUT);
   } else {
     displayEndScreen();
   }
@@ -251,6 +261,22 @@ const startRumble = (): void => setRumble(playElement, true);
 const stopRumble = (): void => setRumble(playElement, false);
 
 const nextRound = (): void => {
+  cancelReveal();
+  if (!arePokemonLeft()) {
+    displayEndScreen();
+    return;
+  }
+  roundActive = true;
+  if (showingEmptyState) {
+    statusElement.textContent = '';
+    showingEmptyState = false;
+  }
+  setHidden(fillerElement, true);
+  setHidden(optionsElement, false);
+  setHidden(endScreenElement, true);
+  clearEndScreenTimers();
+  endScreenElement.replaceChildren();
+
   thePokemon = randomFromLists(pokemonLeft, true);
   let roundPokemons = pickDecoyPokemon(thePokemon.species_id, 3);
   roundPokemons.push(thePokemon);
@@ -270,6 +296,7 @@ const nextRound = (): void => {
   theCry.addEventListener('play', startRumble);
   theCry.addEventListener('ended', stopRumble);
   setHidden(playElement, false);
+  playElement.disabled = false;
   if (restorePlayFocus) {
     playElement.focus();
     restorePlayFocus = false;
@@ -278,14 +305,17 @@ const nextRound = (): void => {
   setHidden(spriteElement, true);
 };
 
-// Start the very first round in the beginning.
-nextRound();
-
 const displayEndScreen = (): void => {
-  const endScreen = requireElement<HTMLDivElement>('.end-screen');
-  endScreen.classList.remove('hidden');
-  endScreen.tabIndex = -1;
-  endScreen.focus();
+  if (showingEmptyState) {
+    statusElement.textContent = '';
+    showingEmptyState = false;
+  }
+  roundActive = false;
+  clearEndScreenTimers();
+  endScreenElement.replaceChildren();
+  setHidden(endScreenElement, false);
+  endScreenElement.tabIndex = -1;
+  endScreenElement.focus();
   const ping = new Audio('media/ping.mp3');
   ping.volume = VOLUME;
 
@@ -306,15 +336,97 @@ const displayEndScreen = (): void => {
     cry.addEventListener('ended', () => setRumble(image, false));
     wrapper.addEventListener('click', () => cry.play());
     wrapper.appendChild(image);
-    setTimeout(
+    const timer = window.setTimeout(
       () => {
         ping.play();
-        endScreen.appendChild(wrapper);
+        endScreenElement.appendChild(wrapper);
       },
       (i + 1) * PING_TIMEOUT,
     );
+    endScreenTimers.push(timer);
   }
 };
+
+const showEmptyState = (): void => {
+  cancelReveal();
+  clearEndScreenTimers();
+  roundActive = false;
+  showingEmptyState = true;
+  setHidden(playElement, false);
+  playElement.disabled = true;
+  setHidden(optionsElement, false);
+  setHidden(successElement, true);
+  setHidden(failureElement, true);
+  fillerElement.textContent = 'Select at least one generation';
+  setHidden(fillerElement, false);
+  setHidden(endScreenElement, true);
+
+  for (let i = 0, len = optionElements.length; i < len; i++) {
+    optionElements[i].disabled = true;
+  }
+
+  statusElement.textContent = 'Select at least one generation to play.';
+};
+
+const allGenerationsEnabled = (): boolean => Object.values(gens).every((gen) => gen.enabled);
+
+const updateGenerationButtons = (): void => {
+  for (let i = 0, len = genElements.length; i < len; i++) {
+    const genElement = genElements[i];
+    const generation = Number(genElement.dataset.gen) as Generation;
+    genElement.setAttribute('aria-pressed', String(gens[generation].enabled));
+  }
+
+  const enabledCount = Object.values(gens).filter((gen) => gen.enabled).length;
+  const allState =
+    enabledCount === Object.keys(gens).length ? 'true' : enabledCount === 0 ? 'false' : 'mixed';
+  allGensElement.setAttribute('aria-pressed', allState);
+};
+
+const refreshGame = (): void => {
+  updatePokemon();
+  if (allPokemon.length === 0) {
+    showEmptyState();
+    return;
+  }
+
+  if (revealTimer !== undefined) {
+    if (!arePokemonLeft()) {
+      cancelReveal();
+      displayEndScreen();
+    }
+    return;
+  }
+
+  if (!roundActive) {
+    if (arePokemonLeft()) {
+      nextRound();
+    } else {
+      displayEndScreen();
+    }
+  }
+};
+
+for (let i = 0, len = genElements.length; i < len; i++) {
+  const genElement = genElements[i];
+  const generation = Number(genElement.dataset.gen) as Generation;
+  genElement.addEventListener('click', () => {
+    gens[generation].enabled = !gens[generation].enabled;
+    updateGenerationButtons();
+    refreshGame();
+  });
+}
+
+allGensElement.addEventListener('click', () => {
+  const enableAll = !allGenerationsEnabled();
+  for (const gen of Object.values(gens)) {
+    gen.enabled = enableAll;
+  }
+  updateGenerationButtons();
+  refreshGame();
+});
+
+updateGenerationButtons();
 
 // Called when the user clicks on one of the guesses.
 optionsElement.addEventListener('click', (event) => {
@@ -330,3 +442,24 @@ optionsElement.addEventListener('click', (event) => {
 
   guess(option);
 });
+
+// Test-only hook for defensive branches that the UI cannot reach.
+const testWindow = window as unknown as {
+  __POKECRY_TEST__?: boolean;
+  __pokecryTest?: {
+    nextRound: () => void;
+    setPokemonLeft: (lists: Pokemon[][]) => void;
+  };
+};
+
+if (testWindow.__POKECRY_TEST__) {
+  testWindow.__pokecryTest = {
+    nextRound,
+    setPokemonLeft: (lists) => {
+      pokemonLeft = lists;
+    },
+  };
+}
+
+// Start the very first round.
+nextRound();
