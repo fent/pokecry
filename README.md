@@ -8,7 +8,7 @@ Motivation from this came from me and my cousins playing Pokemon games growing u
 
 ## Development
 
-Requires Node.js 22 or newer.
+Requires Node.js 22.13 or newer.
 
 ```sh
 npm install

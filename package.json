@@ -1,4 +1,17 @@
 {
+  "name": "pokecry",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Guess Who's That Pokemon from its in-game cry.",
+  "homepage": "https://fent.github.io/pokecry/",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fent/pokecry.git"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  },
   "scripts": {
     "build": "node scripts/build.js",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit",
