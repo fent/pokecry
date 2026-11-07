@@ -1,19 +1,16 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
-    <title>Guess Pokemon from their Cry</title>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Guess Who's That Pokemon from its in-game cry." />
+    <title>Guess Pokemon from their Cry</title>
     <link rel="stylesheet" href="style/style.css" type="text/css" media="all" />
   </head>
   <body>
-    <a href="https://github.com/fent/pokecry">
-      <img
-        style="position: absolute; top: 0; right: 0; border: 0; z-index: 999"
-        src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67"
-        alt="Fork me on GitHub"
-        data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"
-      />
-    </a>
+    <div class="github-ribbon">
+      <a href="https://github.com/fent/pokecry">Fork me on GitHub</a>
+    </div>
     <div class="content">
       <h1>Who's that Pokemon?</h1>
       <div class="results">
@@ -21,33 +18,93 @@
         <h2 class="filler">&nbsp;</h2>
         <h2 class="success hidden">correct</h2>
         <h2 class="failure hidden">wrong</h2>
+        <p class="status sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
       </div>
-      <div class="play">▶</div>
-      <img class="pokemon-sprite hidden" src="" alt="pokemon-sprite" />
+      <button class="play" type="button" aria-label="Play the Pokemon cry">▶</button>
+      <img class="pokemon-sprite hidden" alt="Mystery Pokemon" />
       <div class="options">
-        <div class="option"></div>
-        <div class="option"></div>
-        <div class="option"></div>
-        <div class="option"></div>
+        <button class="option" type="button"></button>
+        <button class="option" type="button"></button>
+        <button class="option" type="button"></button>
+        <button class="option" type="button"></button>
       </div>
-      <div class="gens-title">gens</div>
-      <div class="gens">
-        <div class="gen gen-1" data-gen="1" data-tooltip="blue / red / yellow">I</div>
-        <div class="gen gen-2" data-gen="2" data-tooltip="gold / silver / crystal">II</div>
-        <div class="gen gen-3" data-gen="3" data-tooltip="ruby / saphire / emerald">III</div>
-        <div class="gen gen-4" data-gen="4" data-tooltip="diamond / pearl / platinum">IV</div>
-        <div class="gen gen-5" data-gen="5" data-tooltip="black / white">V</div>
-        <div class="gen gen-6" data-gen="6" data-tooltip="x / y">VI</div>
-        <div class="gen gen-7" data-gen="7" data-tooltip="sun / moon">VII</div>
+      <div class="gens-title" id="gens-title">gens</div>
+      <div class="gens" role="group" aria-labelledby="gens-title">
+        <button
+          class="gen gen-1"
+          type="button"
+          data-gen="1"
+          data-tooltip="blue / red / yellow"
+          aria-label="Generation 1: blue, red, yellow"
+          aria-pressed="true"
+        >
+          I
+        </button>
+        <button
+          class="gen gen-2"
+          type="button"
+          data-gen="2"
+          data-tooltip="gold / silver / crystal"
+          aria-label="Generation 2: gold, silver, crystal"
+          aria-pressed="false"
+        >
+          II
+        </button>
+        <button
+          class="gen gen-3"
+          type="button"
+          data-gen="3"
+          data-tooltip="ruby / sapphire / emerald"
+          aria-label="Generation 3: ruby, sapphire, emerald"
+          aria-pressed="false"
+        >
+          III
+        </button>
+        <button
+          class="gen gen-4"
+          type="button"
+          data-gen="4"
+          data-tooltip="diamond / pearl / platinum"
+          aria-label="Generation 4: diamond, pearl, platinum"
+          aria-pressed="false"
+        >
+          IV
+        </button>
+        <button
+          class="gen gen-5"
+          type="button"
+          data-gen="5"
+          data-tooltip="black / white"
+          aria-label="Generation 5: black, white"
+          aria-pressed="false"
+        >
+          V
+        </button>
+        <button
+          class="gen gen-6"
+          type="button"
+          data-gen="6"
+          data-tooltip="x / y"
+          aria-label="Generation 6: x, y"
+          aria-pressed="false"
+        >
+          VI
+        </button>
+        <button
+          class="gen gen-7"
+          type="button"
+          data-gen="7"
+          data-tooltip="sun / moon"
+          aria-label="Generation 7: sun, moon"
+          aria-pressed="false"
+        >
+          VII
+        </button>
       </div>
     </div>
     <div class="end-screen hidden"></div>
+    <noscript>This game needs JavaScript to run.</noscript>
     <script src="pokemon.js"></script>
     <script src="main.js"></script>
-    <script
-      type="text/javascript"
-      src="https://s7.addthis.com/js/300/addthis_widget.js#pubid=ra-55b4812e1acb29a4"
-      async="async"
-    ></script>
   </body>
 </html>

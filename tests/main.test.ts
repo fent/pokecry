@@ -39,13 +39,14 @@ const ROUND_TIMEOUT = 600;
 
 let audios: FakeAudio[] = [];
 
-const options = (): HTMLDivElement[] =>
-  Array.from(document.querySelectorAll<HTMLDivElement>('.option'));
+const options = (): HTMLButtonElement[] =>
+  Array.from(document.querySelectorAll<HTMLButtonElement>('.option'));
 
-const playButton = (): HTMLDivElement => document.querySelector<HTMLDivElement>('.play')!;
+const playButton = (): HTMLButtonElement => document.querySelector<HTMLButtonElement>('.play')!;
 const sprite = (): HTMLImageElement => document.querySelector<HTMLImageElement>('.pokemon-sprite')!;
 const endScreen = (): HTMLDivElement => document.querySelector<HTMLDivElement>('.end-screen')!;
 const score = (): HTMLSpanElement => document.querySelector<HTMLSpanElement>('.score')!;
+const status = (): HTMLParagraphElement => document.querySelector<HTMLParagraphElement>('.status')!;
 
 const currentAudio = (): FakeAudio => {
   const cry = [...audios].reverse().find((audio) => audio.src !== 'media/ping.mp3');
@@ -60,7 +61,7 @@ const currentSpeciesId = (): string => {
   return file.replace(/\.(mp3|wav)$/, '').split('-')[0];
 };
 
-const pickOption = (correct: boolean): HTMLDivElement => {
+const pickOption = (correct: boolean): HTMLButtonElement => {
   const id = currentSpeciesId();
   const option = options().find((candidate) =>
     correct ? candidate.dataset.speciesId === id : candidate.dataset.speciesId !== id,
@@ -99,6 +100,12 @@ const playRounds = (count: number): void => {
   }
 };
 
+const loadStyles = (): void => {
+  const style = document.createElement('style');
+  style.textContent = readFileSync('style/style.css', 'utf8');
+  document.head.appendChild(style);
+};
+
 beforeEach(() => {
   vi.useFakeTimers();
   vi.stubGlobal('Audio', FakeAudio);
@@ -111,6 +118,7 @@ afterEach(() => {
   vi.useRealTimers();
   vi.unstubAllGlobals();
   document.body.innerHTML = '';
+  document.head.innerHTML = '';
 });
 
 describe('pokecry', () => {
@@ -123,7 +131,7 @@ describe('pokecry', () => {
     expect(buttons.every((button) => button.textContent)).toBe(true);
     expect(playButton().classList.contains('hidden')).toBe(false);
     expect(sprite().classList.contains('hidden')).toBe(true);
-    expect(document.querySelector('.gen-1')?.classList.contains('enabled')).toBe(true);
+    expect(document.querySelector('.gen-1')?.getAttribute('aria-pressed')).toBe('true');
   });
 
   it('plays the current cry from the play button', async () => {
@@ -147,10 +155,11 @@ describe('pokecry', () => {
     expect(document.querySelector('.success')?.classList.contains('hidden')).toBe(false);
     expect(document.querySelector('.failure')?.classList.contains('hidden')).toBe(true);
     expect(score().textContent).toBe('1 / 1');
+    expect(status().textContent).toBe('Correct. Score 1 / 1.');
     expect(sprite().getAttribute('src')).toContain(correctId);
     expect(sprite().classList.contains('hidden')).toBe(false);
     expect(playButton().classList.contains('hidden')).toBe(true);
-    expect(options().every((option) => option.classList.contains('disabled'))).toBe(true);
+    expect(options().every((option) => option.disabled)).toBe(true);
     expect(
       options()
         .find((option) => option.dataset.speciesId === correctId)
@@ -161,11 +170,15 @@ describe('pokecry', () => {
   it('records a wrong guess and labels the correct option', async () => {
     await start();
     const correctId = currentSpeciesId();
+    const correctName = options().find(
+      (option) => option.dataset.speciesId === correctId,
+    )?.textContent;
     guessWrong();
 
     expect(document.querySelector('.success')?.classList.contains('hidden')).toBe(true);
     expect(document.querySelector('.failure')?.classList.contains('hidden')).toBe(false);
     expect(score().textContent).toBe('0 / 1');
+    expect(status().textContent).toBe(`Wrong. The answer was ${correctName}. Score 0 / 1.`);
     expect(
       options()
         .find((option) => option.dataset.speciesId === correctId)
@@ -177,10 +190,20 @@ describe('pokecry', () => {
     await start();
     guessCorrect();
     const currentScore = score().textContent;
+    expect(options()[0].disabled).toBe(true);
 
-    options()[0].click();
+    options()[0].dispatchEvent(new MouseEvent('click', { bubbles: true }));
 
     expect(score().textContent).toBe(currentScore);
+  });
+
+  it('hides the play button after a guess', async () => {
+    loadStyles();
+    await start();
+    guessCorrect();
+
+    expect(playButton().classList.contains('hidden')).toBe(true);
+    expect(getComputedStyle(playButton()).display).toBe('none');
   });
 
   it('ignores clicks that are not on an option', async () => {
@@ -204,25 +227,29 @@ describe('pokecry', () => {
   it('starts the next round after the timeout', async () => {
     await start();
     const firstCry = currentAudio().src;
-    guessCorrect();
+    const option = pickOption(true);
+    option.focus();
+    option.click();
     advanceRound();
 
     expect(playButton().classList.contains('hidden')).toBe(false);
+    expect(document.activeElement).toBe(playButton());
     expect(sprite().classList.contains('hidden')).toBe(true);
-    expect(options().every((option) => !option.classList.contains('disabled'))).toBe(true);
+    expect(options().every((option) => !option.disabled)).toBe(true);
+    expect(status().textContent).toBe('Correct. Score 1 / 1.');
     expect(currentAudio().src).not.toBe(firstCry);
   });
 
   it('toggles generations', async () => {
     await start();
-    const gen2 = document.querySelector<HTMLDivElement>('.gen-2');
+    const gen2 = document.querySelector<HTMLButtonElement>('.gen-2');
     expect(gen2).not.toBeNull();
 
     gen2!.click();
-    expect(gen2!.classList.contains('enabled')).toBe(true);
+    expect(gen2!.getAttribute('aria-pressed')).toBe('true');
 
     gen2!.click();
-    expect(gen2!.classList.contains('enabled')).toBe(false);
+    expect(gen2!.getAttribute('aria-pressed')).toBe('false');
   });
 
   it('shows the end screen after every generation-1 Pokemon', async () => {
@@ -233,6 +260,7 @@ describe('pokecry', () => {
 
     expect(score().textContent).toBe(`${total} / ${total}`);
     expect(endScreen().classList.contains('hidden')).toBe(false);
+    expect(document.activeElement).toBe(endScreen());
     expect(endScreen().children).toHaveLength(0);
   });
 
@@ -247,7 +275,7 @@ describe('pokecry', () => {
     advanceRound();
 
     expect(score().textContent).toBe(`${total - 1} / ${total}`);
-    const sprites = Array.from(endScreen().children) as HTMLDivElement[];
+    const sprites = Array.from(endScreen().querySelectorAll<HTMLButtonElement>('.end-pokemon'));
     expect(sprites).toHaveLength(1);
     expect(sprites[0].getAttribute('data-tooltip')).toBeTruthy();
     expect(sprites[0].querySelector('img')?.getAttribute('src')).toBeTruthy();

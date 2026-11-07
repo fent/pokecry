@@ -145,6 +145,7 @@ const arePokemonLeft = (): boolean => {
 // Keep track of player stats.
 let totalGuesses = 0;
 let correctGuesses = 0;
+let restorePlayFocus = false;
 const guessedWrong: Pokemon[] = [];
 
 const query = <T extends Element>(selector: string): T => {
@@ -156,14 +157,15 @@ const query = <T extends Element>(selector: string): T => {
 };
 
 const optionsElement = query<HTMLDivElement>('.options');
-const optionElements = document.querySelectorAll<HTMLDivElement>('.option');
-const genElements = document.querySelectorAll<HTMLDivElement>('.gen');
+const optionElements = document.querySelectorAll<HTMLButtonElement>('.option');
+const genElements = document.querySelectorAll<HTMLButtonElement>('.gen');
 const successElement = query<HTMLHeadingElement>('.success');
 const failureElement = query<HTMLHeadingElement>('.failure');
 const fillerElement = query<HTMLHeadingElement>('.filler');
 const scoreElement = query<HTMLSpanElement>('.score');
 const spriteElement = query<HTMLImageElement>('.pokemon-sprite');
-const playElement = query<HTMLDivElement>('.play');
+const playElement = query<HTMLButtonElement>('.play');
+const statusElement = query<HTMLParagraphElement>('.status');
 
 const setHidden = (element: Element, hidden: boolean): void => {
   element.classList.toggle('hidden', hidden);
@@ -173,21 +175,23 @@ const setRumble = (element: Element, active: boolean): void => {
   element.classList.toggle('rumble', active);
 };
 
+const displayName = (pokemon: Pokemon): string => pokemon.name || pokemon.identifier;
+
 playElement.addEventListener('click', () => {
   theCry.play();
 });
 
 for (let i = 0, len = genElements.length; i < len; i++) {
   const genElement = genElements[i];
+  const generation = Number(genElement.dataset.gen) as Generation;
+  genElement.setAttribute('aria-pressed', String(gens[generation].enabled));
   genElement.addEventListener('click', () => {
-    genElement.classList.toggle('enabled');
-    const gen = genElement.getAttribute('data-gen') as string;
-    gens[parseInt(gen, 10) as Generation].enabled = genElement.classList.contains('enabled');
+    const data = gens[generation];
+    data.enabled = !data.enabled;
+    genElement.setAttribute('aria-pressed', String(data.enabled));
     updatePokemon();
   });
 }
-
-query<HTMLDivElement>('.gen-1').classList.add('enabled');
 
 // Returns `n` pokemon that are not the given pokemon.
 // Used to have them be shuffled in with the pokemon to be guessed.
@@ -227,27 +231,31 @@ let thePokemon: Pokemon;
 let theCry: HTMLAudioElement;
 
 // Called whenever the user guesses on a pokemon.
-const guess = (option: HTMLDivElement): void => {
+const guess = (option: HTMLButtonElement): void => {
   totalGuesses++;
-  if (option.dataset.speciesId === thePokemon.species_id) {
+  const isCorrect = option.dataset.speciesId === thePokemon.species_id;
+  restorePlayFocus = document.activeElement === option;
+  if (isCorrect) {
     correctGuesses++;
-    setHidden(successElement, false);
-    setHidden(failureElement, true);
-    scoreElement.textContent = correctGuesses + ' / ' + totalGuesses;
-    successElement.appendChild(scoreElement);
   } else {
     guessedWrong.push(thePokemon);
-    setHidden(successElement, true);
-    setHidden(failureElement, false);
-    scoreElement.textContent = correctGuesses + ' / ' + totalGuesses;
-    failureElement.appendChild(scoreElement);
   }
+
+  const scoreText = `${correctGuesses} / ${totalGuesses}`;
+  const resultElement = isCorrect ? successElement : failureElement;
+  setHidden(successElement, !isCorrect);
+  setHidden(failureElement, isCorrect);
+  scoreElement.textContent = scoreText;
+  resultElement.appendChild(scoreElement);
+  statusElement.textContent = isCorrect
+    ? `Correct. Score ${scoreText}.`
+    : `Wrong. The answer was ${displayName(thePokemon)}. Score ${scoreText}.`;
   setHidden(fillerElement, true);
 
   // Disable all buttons.
   for (let i = 0, len = optionElements.length; i < len; i++) {
     const optionElement = optionElements[i];
-    optionElement.classList.add('disabled');
+    optionElement.disabled = true;
 
     // Label the pokemon that was the answer.
     if (optionElement.dataset.speciesId === thePokemon.species_id) {
@@ -258,6 +266,7 @@ const guess = (option: HTMLDivElement): void => {
   // Remove the play button and show the pokemon.
   setHidden(playElement, true);
   spriteElement.setAttribute('src', thePokemon.sprite);
+  spriteElement.alt = displayName(thePokemon);
   setHidden(spriteElement, false);
 
   if (arePokemonLeft()) {
@@ -279,8 +288,9 @@ const nextRound = (): void => {
     const optionElement = optionElements[i];
     const pokemon = roundPokemons[i];
     optionElement.dataset.speciesId = pokemon.species_id;
-    optionElement.textContent = pokemon.name || pokemon.identifier;
-    optionElement.classList.remove('disabled', 'right');
+    optionElement.textContent = displayName(pokemon);
+    optionElement.disabled = false;
+    optionElement.classList.remove('right');
   }
 
   theCry = new Audio(thePokemon.cry);
@@ -289,6 +299,11 @@ const nextRound = (): void => {
   theCry.addEventListener('play', startRumble);
   theCry.addEventListener('ended', stopRumble);
   setHidden(playElement, false);
+  if (restorePlayFocus) {
+    playElement.focus();
+    restorePlayFocus = false;
+  }
+  spriteElement.alt = 'Mystery Pokemon';
   setHidden(spriteElement, true);
 };
 
@@ -298,6 +313,8 @@ nextRound();
 const displayEndScreen = (): void => {
   const endScreen = query<HTMLDivElement>('.end-screen');
   endScreen.classList.remove('hidden');
+  endScreen.tabIndex = -1;
+  endScreen.focus();
   const ping = new Audio('media/ping.mp3');
   ping.volume = VOLUME;
 
@@ -305,11 +322,15 @@ const displayEndScreen = (): void => {
     const pokemon = guessedWrong[i];
     const cry = new Audio(pokemon.cry);
     cry.volume = VOLUME;
-    const wrapper = document.createElement('div');
+    const wrapper = document.createElement('button');
+    wrapper.type = 'button';
+    wrapper.className = 'end-pokemon';
+    wrapper.dataset.tooltip = displayName(pokemon);
+    wrapper.setAttribute('aria-label', `Play ${displayName(pokemon)}'s cry`);
     const image = document.createElement('img');
     image.className = 'pokemon-sprite';
     image.setAttribute('src', pokemon.sprite);
-    wrapper.setAttribute('data-tooltip', pokemon.name || pokemon.identifier);
+    image.alt = '';
     cry.addEventListener('play', () => setRumble(image, true));
     cry.addEventListener('ended', () => setRumble(image, false));
     wrapper.addEventListener('click', () => cry.play());
@@ -331,8 +352,8 @@ optionsElement.addEventListener('click', (event) => {
     return;
   }
 
-  const option = target.closest<HTMLDivElement>('.option');
-  if (!option || option.classList.contains('disabled')) {
+  const option = target.closest<HTMLButtonElement>('.option');
+  if (!option || option.disabled) {
     return;
   }
 
