@@ -3096,7 +3096,7 @@ pokemon.gen7 = [
   {
     "species_id": "741",
     "identifier": "oricorio",
-    "forms": ["!baile", "pom-pom", "pa-u", "sensu"],
+    "forms": ["!baile", "pom-pom", "pau", "sensu"],
     "formSounds": true
   },
   {
