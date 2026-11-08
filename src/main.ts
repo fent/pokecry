@@ -13,21 +13,28 @@ interface GenerationConfig extends GenerationPaths {
   enabled: boolean;
 }
 
-interface GenData extends GenerationConfig {
-  pokemon: Pokemon[];
-  pokemonLeft: Pokemon[];
+interface PokemonEntry {
+  def: PokemonDef;
+  paths: GenerationPaths;
 }
 
-const enrichPokemon = (def: PokemonDef, paths: GenerationPaths): Pokemon => {
-  let spriteId = def.species_id;
-  let cryId = def.species_id;
+interface GenData extends GenerationConfig {
+  pokemon: PokemonEntry[];
+  pokemonLeft: PokemonEntry[];
+}
 
+// Pick a form for this round. The base form is one of the candidates, so
+// every form is equally likely instead of giving the base a flat 50%.
+const resolvePokemon = (entry: PokemonEntry): Pokemon => {
+  const def = entry.def;
   const formsAvailable =
     def.formSprites === false ? [] : (def.forms ?? []).filter((form) => form[0] !== '!');
+  const forms = ['', ...formsAvailable];
+  const form = forms[Math.floor(Math.random() * forms.length)];
 
-  // 50/50 to select another form.
-  if (formsAvailable.length > 0 && Math.random() > 0.5) {
-    const form = formsAvailable[Math.floor(Math.random() * formsAvailable.length)];
+  let spriteId = def.species_id;
+  let cryId = def.species_id;
+  if (form) {
     const formName = form.replace(/^@/, '');
     spriteId += `-${formName}`;
     if (def.formSounds || form.startsWith('@')) {
@@ -37,13 +44,13 @@ const enrichPokemon = (def: PokemonDef, paths: GenerationPaths): Pokemon => {
 
   return {
     ...def,
-    sprite: `media/sprites/${paths.spritesDir}/${spriteId}.png`,
-    cry: `media/cries/${paths.criesDir}/${cryId}.mp3`,
+    sprite: `media/sprites/${entry.paths.spritesDir}/${spriteId}.png`,
+    cry: `media/cries/${entry.paths.criesDir}/${cryId}.mp3`,
   };
 };
 
 const createGeneration = (defs: PokemonDef[], config: GenerationConfig): GenData => {
-  const list = defs.map((def) => enrichPokemon(def, config));
+  const list = defs.map((def) => ({ def, paths: config }));
   return { ...config, pokemon: list, pokemonLeft: list.slice() };
 };
 
@@ -82,8 +89,8 @@ const gens: Record<Generation, GenData> = {
 };
 
 // Gets a list of lists of pokemon from all enabled generations.
-const getPokemon = (key: 'pokemon' | 'pokemonLeft'): Pokemon[][] => {
-  const all: Pokemon[][] = [];
+const getPokemon = (key: 'pokemon' | 'pokemonLeft'): PokemonEntry[][] => {
+  const all: PokemonEntry[][] = [];
   for (const gen in gens) {
     const d = gens[gen as unknown as Generation];
     if (d.enabled) {
@@ -93,10 +100,10 @@ const getPokemon = (key: 'pokemon' | 'pokemonLeft'): Pokemon[][] => {
   return all;
 };
 
-const getAllPokemon = (): Pokemon[][] => getPokemon('pokemon');
-const getPokemonLeft = (): Pokemon[][] => getPokemon('pokemonLeft');
+const getAllPokemon = (): PokemonEntry[][] => getPokemon('pokemon');
+const getPokemonLeft = (): PokemonEntry[][] => getPokemon('pokemonLeft');
 
-let allPokemon: Pokemon[][], pokemonLeft: Pokemon[][];
+let allPokemon: PokemonEntry[][], pokemonLeft: PokemonEntry[][];
 
 // This is called when the game first begins, and whenever
 // the generations enabled is updated.
@@ -108,7 +115,7 @@ updatePokemon();
 
 // Gets a random pokemon from a list of lists, which will be either
 // all pokemon from enabled generations, or all pokemon that are left.
-const randomFromLists = (lists: Pokemon[][], remove: boolean): Pokemon => {
+const randomFromLists = (lists: PokemonEntry[][], remove: boolean): PokemonEntry => {
   const available = lists.filter((list) => list.length > 0);
   const list = available[Math.floor(Math.random() * available.length)];
   const index = Math.floor(Math.random() * list.length);
@@ -183,7 +190,7 @@ const cancelReveal = (): void => {
   }
 };
 
-const displayName = (pokemon: Pokemon): string => pokemon.name || pokemon.identifier;
+const displayName = (pokemon: PokemonDef): string => pokemon.name || pokemon.identifier;
 
 playElement.addEventListener('click', () => {
   theCry.play();
@@ -194,14 +201,14 @@ endGameElement.addEventListener('click', () => {
 });
 
 // Pick decoys that are not the answer, for the player to choose between.
-const pickDecoyPokemon = (speciesId: string, count: number): Pokemon[] => {
+const pickDecoyPokemon = (speciesId: string, count: number): PokemonEntry[] => {
   const seenIds = new Set([speciesId]);
-  const decoys: Pokemon[] = [];
+  const decoys: PokemonEntry[] = [];
 
   while (decoys.length < count) {
     const candidate = randomFromLists(allPokemon, false);
-    if (!seenIds.has(candidate.species_id)) {
-      seenIds.add(candidate.species_id);
+    if (!seenIds.has(candidate.def.species_id)) {
+      seenIds.add(candidate.def.species_id);
       decoys.push(candidate);
     }
   }
@@ -294,8 +301,8 @@ const nextRound = (): void => {
   clearEndScreenTimers();
   endScreenElement.replaceChildren();
 
-  thePokemon = randomFromLists(pokemonLeft, true);
-  let roundPokemons = pickDecoyPokemon(thePokemon.species_id, 3);
+  thePokemon = resolvePokemon(randomFromLists(pokemonLeft, true));
+  let roundPokemons = pickDecoyPokemon(thePokemon.species_id, 3).map((entry) => entry.def);
   roundPokemons.push(thePokemon);
   roundPokemons = shuffle(roundPokemons);
   for (let i = 0, len = optionElements.length; i < len; i++) {
@@ -475,13 +482,15 @@ const testWindow = window as unknown as {
   __POKECRY_TEST__?: boolean;
   __pokecryTest?: {
     nextRound: () => void;
-    setPokemonLeft: (lists: Pokemon[][]) => void;
+    resolvePokemon: (entry: PokemonEntry) => Pokemon;
+    setPokemonLeft: (lists: PokemonEntry[][]) => void;
   };
 };
 
 if (testWindow.__POKECRY_TEST__) {
   testWindow.__pokecryTest = {
     nextRound,
+    resolvePokemon,
     setPokemonLeft: (lists) => {
       pokemonLeft = lists;
     },

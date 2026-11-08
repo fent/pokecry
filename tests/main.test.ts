@@ -143,6 +143,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.useRealTimers();
+  vi.restoreAllMocks();
   vi.unstubAllGlobals();
   delete (window as unknown as { __POKECRY_TEST__?: boolean }).__POKECRY_TEST__;
   delete (window as unknown as { __pokecryTest?: unknown }).__pokecryTest;
@@ -172,6 +173,76 @@ describe('pokecry', () => {
     expect(gen9).toHaveLength(120);
     expect(gen8.some((pokemon) => pokemon.forms?.some((form) => form.startsWith('!')))).toBe(true);
     expect(gen9.some((pokemon) => pokemon.forms?.some((form) => form.startsWith('!')))).toBe(true);
+  });
+
+  it('selects base and alternate forms uniformly per call', async () => {
+    (window as unknown as { __POKECRY_TEST__: boolean }).__POKECRY_TEST__ = true;
+    await start();
+
+    const hooks = (
+      window as unknown as {
+        __pokecryTest: {
+          resolvePokemon: (entry: unknown) => { sprite: string; cry: string };
+        };
+      }
+    ).__pokecryTest;
+
+    const entry = {
+      def: {
+        species_id: '201',
+        identifier: 'unown',
+        forms: ['!a', 'b', 'c'],
+        formSounds: true,
+      },
+      paths: { spritesDir: 'crystal', criesDir: 'legacy' },
+    };
+
+    const random = vi.spyOn(Math, 'random');
+    random.mockReturnValueOnce(0);
+    expect(hooks.resolvePokemon(entry).sprite).toContain('/201.png');
+
+    random.mockReturnValueOnce(0.99);
+    const resolved = hooks.resolvePokemon(entry);
+    expect(resolved.sprite).toContain('/201-c.png');
+    expect(resolved.cry).toContain('/201-c.mp3');
+
+    random.mockReturnValueOnce(0.99);
+    const noFormSprites = hooks.resolvePokemon({
+      def: {
+        species_id: '201',
+        identifier: 'unown',
+        forms: ['b'],
+        formSprites: false,
+      },
+      paths: { spritesDir: 'crystal', criesDir: 'legacy' },
+    });
+    expect(noFormSprites.sprite).toContain('/201.png');
+
+    random.mockReturnValueOnce(0.99);
+    const silentForm = hooks.resolvePokemon({
+      def: {
+        species_id: '201',
+        identifier: 'unown',
+        forms: ['b'],
+        formSounds: false,
+      },
+      paths: { spritesDir: 'crystal', criesDir: 'legacy' },
+    });
+    expect(silentForm.sprite).toContain('/201-b.png');
+    expect(silentForm.cry).toContain('/201.mp3');
+
+    random.mockReturnValueOnce(0.99);
+    const atForm = hooks.resolvePokemon({
+      def: {
+        species_id: '201',
+        identifier: 'unown',
+        forms: ['@eternal'],
+        formSounds: false,
+      },
+      paths: { spritesDir: 'crystal', criesDir: 'legacy' },
+    });
+    expect(atForm.sprite).toContain('/201-eternal.png');
+    expect(atForm.cry).toContain('/201-eternal.mp3');
   });
 
   it('excludes mega and gmax forms', async () => {
