@@ -20,6 +20,8 @@ interface PokemonData {
   gen5: PokemonDef[];
   gen6: PokemonDef[];
   gen7: PokemonDef[];
+  gen8: PokemonDef[];
+  gen9: PokemonDef[];
 }
 
 const pokemon: PokemonData = {
@@ -30,6 +32,8 @@ const pokemon: PokemonData = {
   gen5: [],
   gen6: [],
   gen7: [],
+  gen8: [],
+  gen9: [],
 };
 
 pokemon.gen1 = [
@@ -3394,6 +3398,461 @@ pokemon.gen7 = [
     "species_id": "809",
     "identifier": "melmetal"
   },
+];
+
+pokemon.gen8 = [
+  {
+    "species_id": "810",
+    "identifier": "grookey"
+  },
+  {
+    "species_id": "811",
+    "identifier": "thwackey"
+  },
+  {
+    "species_id": "812",
+    "identifier": "rillaboom"
+  },
+  {
+    "species_id": "813",
+    "identifier": "scorbunny"
+  },
+  {
+    "species_id": "814",
+    "identifier": "raboot"
+  },
+  {
+    "species_id": "815",
+    "identifier": "cinderace"
+  },
+  {
+    "species_id": "816",
+    "identifier": "sobble"
+  },
+  {
+    "species_id": "817",
+    "identifier": "drizzile"
+  },
+  {
+    "species_id": "818",
+    "identifier": "inteleon"
+  },
+  {
+    "species_id": "819",
+    "identifier": "skwovet"
+  },
+  {
+    "species_id": "820",
+    "identifier": "greedent"
+  },
+  {
+    "species_id": "821",
+    "identifier": "rookidee"
+  },
+  {
+    "species_id": "822",
+    "identifier": "corvisquire"
+  },
+  {
+    "species_id": "823",
+    "identifier": "corviknight"
+  },
+  {
+    "species_id": "824",
+    "identifier": "blipbug"
+  },
+  {
+    "species_id": "825",
+    "identifier": "dottler"
+  },
+  {
+    "species_id": "826",
+    "identifier": "orbeetle"
+  },
+  {
+    "species_id": "827",
+    "identifier": "nickit"
+  },
+  {
+    "species_id": "828",
+    "identifier": "thievul"
+  },
+  {
+    "species_id": "829",
+    "identifier": "gossifleur"
+  },
+  {
+    "species_id": "830",
+    "identifier": "eldegoss"
+  },
+  {
+    "species_id": "831",
+    "identifier": "wooloo"
+  },
+  {
+    "species_id": "832",
+    "identifier": "dubwool"
+  },
+  {
+    "species_id": "833",
+    "identifier": "chewtle"
+  },
+  {
+    "species_id": "834",
+    "identifier": "drednaw"
+  },
+  {
+    "species_id": "835",
+    "identifier": "yamper"
+  },
+  {
+    "species_id": "836",
+    "identifier": "boltund"
+  },
+  {
+    "species_id": "837",
+    "identifier": "rolycoly"
+  },
+  {
+    "species_id": "838",
+    "identifier": "carkol"
+  },
+  {
+    "species_id": "839",
+    "identifier": "coalossal"
+  },
+  {
+    "species_id": "840",
+    "identifier": "applin"
+  },
+  {
+    "species_id": "841",
+    "identifier": "flapple"
+  },
+  {
+    "species_id": "842",
+    "identifier": "appletun"
+  },
+  {
+    "species_id": "843",
+    "identifier": "silicobra"
+  },
+  {
+    "species_id": "844",
+    "identifier": "sandaconda"
+  },
+  {
+    "species_id": "845",
+    "identifier": "cramorant",
+    "forms": [
+      "gulping",
+      "gorging"
+    ],
+    "formSounds": true
+  },
+  {
+    "species_id": "846",
+    "identifier": "arrokuda"
+  },
+  {
+    "species_id": "847",
+    "identifier": "barraskewda"
+  },
+  {
+    "species_id": "848",
+    "identifier": "toxel"
+  },
+  {
+    "species_id": "849",
+    "identifier": "toxtricity",
+    "forms": [
+      "!amped",
+      "low-key"
+    ],
+    "formSounds": true
+  },
+  {
+    "species_id": "850",
+    "identifier": "sizzlipede"
+  },
+  {
+    "species_id": "851",
+    "identifier": "centiskorch"
+  },
+  {
+    "species_id": "852",
+    "identifier": "clobbopus"
+  },
+  {
+    "species_id": "853",
+    "identifier": "grapploct"
+  },
+  {
+    "species_id": "854",
+    "identifier": "sinistea"
+  },
+  {
+    "species_id": "855",
+    "identifier": "polteageist"
+  },
+  {
+    "species_id": "856",
+    "identifier": "hatenna"
+  },
+  {
+    "species_id": "857",
+    "identifier": "hattrem"
+  },
+  {
+    "species_id": "858",
+    "identifier": "hatterene"
+  },
+  {
+    "species_id": "859",
+    "identifier": "impidimp"
+  },
+  {
+    "species_id": "860",
+    "identifier": "morgrem"
+  },
+  {
+    "species_id": "861",
+    "identifier": "grimmsnarl"
+  },
+  {
+    "species_id": "862",
+    "identifier": "obstagoon"
+  },
+  {
+    "species_id": "863",
+    "identifier": "perrserker"
+  },
+  {
+    "species_id": "864",
+    "identifier": "cursola"
+  },
+  {
+    "species_id": "865",
+    "identifier": "sirfetchd"
+  },
+  {
+    "species_id": "866",
+    "identifier": "mr-rime"
+  },
+  {
+    "species_id": "867",
+    "identifier": "runerigus"
+  },
+  {
+    "species_id": "868",
+    "identifier": "milcery"
+  },
+  {
+    "species_id": "869",
+    "identifier": "alcremie"
+  },
+  {
+    "species_id": "870",
+    "identifier": "falinks"
+  },
+  {
+    "species_id": "871",
+    "identifier": "pincurchin"
+  },
+  {
+    "species_id": "872",
+    "identifier": "snom"
+  },
+  {
+    "species_id": "873",
+    "identifier": "frosmoth"
+  },
+  {
+    "species_id": "874",
+    "identifier": "stonjourner"
+  },
+  {
+    "species_id": "875",
+    "identifier": "eiscue",
+    "forms": [
+      "!ice",
+      "noice"
+    ],
+    "formSounds": true
+  },
+  {
+    "species_id": "876",
+    "identifier": "indeedee",
+    "forms": [
+      "!male",
+      "female"
+    ],
+    "formSounds": true
+  },
+  {
+    "species_id": "877",
+    "identifier": "morpeko",
+    "forms": [
+      "!full-belly",
+      "hangry"
+    ],
+    "formSounds": true
+  },
+  {
+    "species_id": "878",
+    "identifier": "cufant"
+  },
+  {
+    "species_id": "879",
+    "identifier": "copperajah"
+  },
+  {
+    "species_id": "880",
+    "identifier": "dracozolt"
+  },
+  {
+    "species_id": "881",
+    "identifier": "arctozolt"
+  },
+  {
+    "species_id": "882",
+    "identifier": "dracovish"
+  },
+  {
+    "species_id": "883",
+    "identifier": "arctovish"
+  },
+  {
+    "species_id": "884",
+    "identifier": "duraludon"
+  },
+  {
+    "species_id": "885",
+    "identifier": "dreepy"
+  },
+  {
+    "species_id": "886",
+    "identifier": "drakloak"
+  },
+  {
+    "species_id": "887",
+    "identifier": "dragapult"
+  },
+  {
+    "species_id": "888",
+    "identifier": "zacian",
+    "forms": [
+      "crowned"
+    ],
+    "formSounds": true
+  },
+  {
+    "species_id": "889",
+    "identifier": "zamazenta",
+    "forms": [
+      "crowned"
+    ],
+    "formSounds": true
+  },
+  {
+    "species_id": "890",
+    "identifier": "eternatus",
+    "forms": [
+      "eternamax"
+    ],
+    "formSounds": true
+  },
+  {
+    "species_id": "891",
+    "identifier": "kubfu"
+  },
+  {
+    "species_id": "892",
+    "identifier": "urshifu",
+    "forms": [
+      "!single-strike",
+      "rapid-strike"
+    ],
+    "formSounds": true
+  },
+  {
+    "species_id": "893",
+    "identifier": "zarude",
+    "forms": [
+      "dada"
+    ],
+    "formSounds": true
+  },
+  {
+    "species_id": "894",
+    "identifier": "regieleki"
+  },
+  {
+    "species_id": "895",
+    "identifier": "regidrago"
+  },
+  {
+    "species_id": "896",
+    "identifier": "glastrier"
+  },
+  {
+    "species_id": "897",
+    "identifier": "spectrier"
+  },
+  {
+    "species_id": "898",
+    "identifier": "calyrex",
+    "forms": [
+      "ice",
+      "shadow"
+    ],
+    "formSounds": true
+  },
+  {
+    "species_id": "899",
+    "identifier": "wyrdeer"
+  },
+  {
+    "species_id": "900",
+    "identifier": "kleavor"
+  },
+  {
+    "species_id": "901",
+    "identifier": "ursaluna",
+    "forms": [
+      "bloodmoon"
+    ],
+    "formSounds": true
+  },
+  {
+    "species_id": "902",
+    "identifier": "basculegion",
+    "forms": [
+      "!male",
+      "female"
+    ],
+    "formSounds": true
+  },
+  {
+    "species_id": "903",
+    "identifier": "sneasler"
+  },
+  {
+    "species_id": "904",
+    "identifier": "overqwil"
+  },
+  {
+    "species_id": "905",
+    "identifier": "enamorus",
+    "forms": [
+      "!incarnate",
+      "therian"
+    ],
+    "formSounds": true
+  },
+];
+
+pokemon.gen9 = [
 ];
 
 Object.assign(window, { pokemon });

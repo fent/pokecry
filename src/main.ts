@@ -2,7 +2,7 @@ const REVEAL_TIMEOUT = 1200;
 const PING_TIMEOUT = 600;
 const VOLUME = 0.5;
 
-type Generation = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+type Generation = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 interface GenerationPaths {
   spritesDir: string;
@@ -67,6 +67,11 @@ const gens: Record<Generation, GenData> = {
   7: createGeneration(pokemon.gen7, {
     enabled: false,
     spritesDir: 'sun-moon',
+    criesDir: 'latest',
+  }),
+  8: createGeneration(pokemon.gen8, {
+    enabled: false,
+    spritesDir: 'sword-shield',
     criesDir: 'latest',
   }),
 };

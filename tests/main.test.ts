@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const html = readFileSync('index.html', 'utf8');
@@ -140,6 +140,52 @@ describe('pokecry', () => {
     expect(playButton().classList.contains('hidden')).toBe(false);
     expect(sprite().classList.contains('hidden')).toBe(true);
     expect(document.querySelector('.gen-1')?.getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('includes generation 8 with alternate forms', async () => {
+    await start();
+
+    const gen8 = (window as unknown as { pokemon: { gen8: { forms?: string[] }[] } }).pokemon.gen8;
+    expect(gen8).toHaveLength(96);
+    expect(gen8.some((pokemon) => pokemon.forms?.some((form) => form.startsWith('!')))).toBe(true);
+  });
+
+  it('excludes mega and gmax forms', async () => {
+    await start();
+
+    const allPokemon = Object.values(
+      (window as unknown as { pokemon: Record<string, { forms?: string[] }[]> }).pokemon,
+    ).flat();
+
+    expect(
+      allPokemon.some((pokemon) => pokemon.forms?.some((form) => /gmax|mega/.test(form))),
+    ).toBe(false);
+  });
+
+  it('has assets for every generation 8 Pokemon and form', async () => {
+    await start();
+
+    const gen8 = (
+      window as unknown as {
+        pokemon: { gen8: { species_id: string; forms?: string[] }[] };
+      }
+    ).pokemon.gen8;
+
+    for (const pokemon of gen8) {
+      expect(existsSync(`media/sprites/sword-shield/${pokemon.species_id}.png`)).toBe(true);
+      expect(existsSync(`media/cries/latest/${pokemon.species_id}.mp3`)).toBe(true);
+
+      for (const form of pokemon.forms ?? []) {
+        if (form.startsWith('!')) {
+          continue;
+        }
+        const name = form.replace(/^@/, '');
+        expect(existsSync(`media/sprites/sword-shield/${pokemon.species_id}-${name}.png`)).toBe(
+          true,
+        );
+        expect(existsSync(`media/cries/latest/${pokemon.species_id}-${name}.mp3`)).toBe(true);
+      }
+    }
   });
 
   it('plays the current cry from the play button', async () => {

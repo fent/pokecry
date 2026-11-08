@@ -80,6 +80,24 @@ const download = async (url, path, force) => {
   return path;
 };
 
+const downloadOptional = async (url, path, force) => {
+  if (!force && existsSync(path)) {
+    return path;
+  }
+
+  const response = await fetch(url);
+  if (response.status === 404) {
+    return null;
+  }
+  if (!response.ok) {
+    throw new Error(`Failed to download ${url}: ${response.status}`);
+  }
+
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, Buffer.from(await response.arrayBuffer()));
+  return path;
+};
+
 const parseCsv = (text) => {
   const rows = [];
   let row = [];
@@ -121,6 +139,16 @@ const parseCsv = (text) => {
   return rows;
 };
 
+const loadCsv = async (name, force) => {
+  const url = `https://raw.githubusercontent.com/PokeAPI/pokeapi/${POKEAPI_SHA}/data/v2/csv/${name}`;
+  const path = join(CACHE, `pokeapi-${POKEAPI_SHA}`, name);
+  await download(url, path, force);
+
+  const rows = parseCsv(readFileSync(path, 'utf8'));
+  const [header, ...body] = rows;
+  return body.map((row) => Object.fromEntries(header.map((key, index) => [key, row[index]])));
+};
+
 const requireFfmpeg = () => {
   try {
     execFileSync(FFMPEG, ['-version'], { stdio: 'ignore' });
@@ -156,33 +184,52 @@ const normalizeAudio = () => {
   console.log(`Converted ${wavs.length} WAV cries to MP3.`);
 };
 
+const formSuffix = (speciesIdentifier, pokemon, form) => {
+  const suffix = form?.form_identifier || pokemon.identifier.slice(speciesIdentifier.length + 1);
+  return suffix || '';
+};
+
+const isExcludedForm = (pokemon, form) =>
+  form?.is_mega === '1' || form?.form_identifier === 'gmax' || pokemon.identifier.endsWith('-gmax');
+
 const updateData = (dataKey, entries) => {
   const dataPath = join(ROOT, 'src/pokemon.ts');
   let data = readFileSync(dataPath, 'utf8');
-  const existing = new Set(
-    [...data.matchAll(/"species_id": "(\d+)"/g)].map((match) => Number(match[1])),
-  );
-  const newEntries = entries.filter((entry) => !existing.has(entry.id));
-
-  if (newEntries.length === 0) {
-    return 0;
-  }
 
   const start = data.indexOf(`pokemon.${dataKey} = [`);
+  const arrayStart = start === -1 ? -1 : data.indexOf('[', start);
   const close = start === -1 ? -1 : data.indexOf('\n];', start);
-  if (start === -1 || close === -1) {
+  if (start === -1 || arrayStart === -1 || close === -1) {
     throw new Error(`Could not find pokemon.${dataKey} in src/pokemon.ts`);
   }
 
-  const block = newEntries
-    .map(
-      ({ id, identifier }) =>
-        `  {\n    "species_id": "${id}",\n    "identifier": "${identifier}"\n  },\n`,
-    )
-    .join('');
-  data = data.slice(0, close) + '\n' + block + data.slice(close + 1);
+  const arrayText = data.slice(arrayStart, close + 2).replace(/,\s*]$/, ']');
+  let existing;
+  try {
+    existing = JSON.parse(arrayText);
+  } catch (error) {
+    throw new Error(`Could not parse pokemon.${dataKey}: ${error.message}`, { cause: error });
+  }
+
+  const byId = new Map(existing.map((entry) => [entry.species_id, entry]));
+  let added = 0;
+  for (const entry of entries) {
+    if (!byId.has(entry.species_id)) {
+      added += 1;
+    }
+    byId.set(entry.species_id, entry);
+  }
+
+  const merged = [...byId.values()].sort(
+    (left, right) => Number(left.species_id) - Number(right.species_id),
+  );
+  const body = merged
+    .map((entry) => '  ' + JSON.stringify(entry, null, 2).replace(/\n/g, '\n  '))
+    .join(',\n');
+
+  data = data.slice(0, arrayStart + 1) + '\n' + body + (body ? ',\n' : '') + data.slice(close + 1);
   writeFileSync(dataPath, data);
-  return newEntries.length;
+  return added;
 };
 
 const importPokemon = async (generation, ids, force) => {
@@ -192,24 +239,42 @@ const importPokemon = async (generation, ids, force) => {
     throw new Error(`Unsupported generation: ${generation}`);
   }
 
-  const speciesUrl = `https://raw.githubusercontent.com/PokeAPI/pokeapi/${POKEAPI_SHA}/data/v2/csv/pokemon_species.csv`;
-  const speciesPath = join(CACHE, `pokeapi-${POKEAPI_SHA}`, 'pokemon_species.csv');
-  await download(speciesUrl, speciesPath, force);
+  const speciesRows = await loadCsv('pokemon_species.csv', force);
+  const pokemonRows = await loadCsv('pokemon.csv', force);
+  const formRows = await loadCsv('pokemon_forms.csv', force);
 
-  const rows = parseCsv(readFileSync(speciesPath, 'utf8'));
-  const header = rows[0];
-  const idIndex = header.indexOf('id');
-  const identifierIndex = header.indexOf('identifier');
-  const speciesById = new Map(rows.slice(1).map((row) => [Number(row[idIndex]), row]));
+  const speciesById = new Map(speciesRows.map((row) => [Number(row.id), row]));
+  const pokemonBySpecies = new Map();
+  for (const row of pokemonRows) {
+    const list = pokemonBySpecies.get(row.species_id) ?? [];
+    list.push(row);
+    pokemonBySpecies.set(row.species_id, list);
+  }
+  const formByPokemon = new Map(formRows.map((row) => [row.pokemon_id, row]));
 
   const entries = [];
+  const skipped = [];
+  let formCount = 0;
+
   for (const id of ids) {
     const species = speciesById.get(id);
     if (!species) {
       throw new Error(`Species ${id} was not found in PokeAPI data`);
     }
 
-    const identifier = species[identifierIndex];
+    const identifier = species.identifier;
+    const variants = pokemonBySpecies.get(String(id)) ?? [];
+    const defaultVariant = variants.find((variant) => variant.is_default === '1') ?? variants[0];
+    if (!defaultVariant) {
+      throw new Error(`No Pokemon data found for species ${id}`);
+    }
+
+    const defaultSuffix = formSuffix(
+      identifier,
+      defaultVariant,
+      formByPokemon.get(defaultVariant.id),
+    );
+
     const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/${SPRITES_SHA}/sprites/pokemon/${id}.png`;
     const cryUrl = `https://raw.githubusercontent.com/PokeAPI/cries/${CRIES_SHA}/cries/pokemon/latest/${id}.ogg`;
     const spriteSource = join(CACHE, `sprites-${SPRITES_SHA}`, `${id}.png`);
@@ -230,13 +295,79 @@ const importPokemon = async (generation, ids, force) => {
       { stdio: 'inherit' },
     );
 
-    entries.push({ id, identifier });
+    const forms = [];
+    const seenForms = new Set();
+    let formSounds = false;
+
+    for (const variant of variants) {
+      if (variant.id === defaultVariant.id) {
+        continue;
+      }
+
+      const form = formByPokemon.get(variant.id);
+      if (isExcludedForm(variant, form)) {
+        continue;
+      }
+
+      const suffix = formSuffix(identifier, variant, form);
+      if (!suffix) {
+        skipped.push(`${id} ${variant.identifier}: no form name`);
+        continue;
+      }
+
+      const name = suffix;
+      if (seenForms.has(name)) {
+        continue;
+      }
+
+      const formSpriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/${SPRITES_SHA}/sprites/pokemon/${variant.id}.png`;
+      const formCryUrl = `https://raw.githubusercontent.com/PokeAPI/cries/${CRIES_SHA}/cries/pokemon/latest/${variant.id}.ogg`;
+      const formSpriteSource = join(CACHE, `sprites-${SPRITES_SHA}`, `${variant.id}.png`);
+      const formCrySource = join(CACHE, `cries-${CRIES_SHA}`, `${variant.id}.ogg`);
+
+      const [formSprite, formCry] = await Promise.all([
+        downloadOptional(formSpriteUrl, formSpriteSource, force),
+        downloadOptional(formCryUrl, formCrySource, force),
+      ]);
+      if (!formSprite || !formCry) {
+        skipped.push(`${id} ${variant.identifier}: missing sprite or cry`);
+        continue;
+      }
+
+      const formSpriteTarget = join(ROOT, 'media/sprites', config.spritesDir, `${id}-${name}.png`);
+      const formCryTarget = join(ROOT, 'media/cries', 'latest', `${id}-${name}.mp3`);
+      mkdirSync(dirname(formSpriteTarget), { recursive: true });
+      mkdirSync(dirname(formCryTarget), { recursive: true });
+
+      cpSync(formSprite, formSpriteTarget);
+      execFileSync(
+        FFMPEG,
+        ['-y', '-loglevel', 'error', '-i', formCry, '-ac', '1', '-b:a', '96k', formCryTarget],
+        { stdio: 'inherit' },
+      );
+
+      seenForms.add(name);
+      forms.push(name);
+      formSounds = true;
+    }
+
+    const entry = { species_id: String(id), identifier };
+    if (forms.length > 0) {
+      entry.forms = defaultSuffix ? [`!${defaultSuffix}`, ...forms] : forms;
+      entry.formSounds = formSounds;
+      formCount += forms.length + (defaultSuffix ? 1 : 0);
+    }
+    entries.push(entry);
   }
 
   const added = updateData(config.dataKey, entries);
   console.log(
-    `Imported ${entries.length} Pokemon for generation ${generation}; added ${added} data entries.`,
+    `Imported ${entries.length} Pokemon for generation ${generation}; ` +
+      `added ${added} data entries; ${formCount} forms.`,
   );
+  if (skipped.length > 0) {
+    console.log(`Skipped ${skipped.length} forms:\n${skipped.join('\n')}`);
+  }
 };
 
 const main = async () => {
