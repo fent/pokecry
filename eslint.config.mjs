@@ -4,7 +4,7 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['dist', 'node_modules', 'media', 'coverage', 'src/pokemon.ts'] },
+  { ignores: ['dist', 'node_modules', 'media', 'coverage', '.cache', 'src/pokemon.ts'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
@@ -23,11 +23,14 @@ export default tseslint.config(
     },
   },
   {
-    files: ['scripts/**/*.js', '*.mjs'],
+    files: ['scripts/**/*.js', 'scripts/**/*.mjs', '*.mjs'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
-      globals: globals.node,
+      globals: {
+        ...globals.node,
+        fetch: 'readonly',
+      },
     },
   },
   {

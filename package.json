@@ -20,6 +20,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "import:pokemon": "node scripts/import-pokemon.mjs",
+    "normalize:audio": "node scripts/import-pokemon.mjs --normalize-audio",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check": "npm run format:check && npm run lint && npm run typecheck"

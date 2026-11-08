@@ -2,6 +2,7 @@
 dist
 node_modules
 coverage
+.cache
 package-lock.json
 src/pokemon.ts
 media
