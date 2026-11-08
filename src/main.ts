@@ -65,7 +65,6 @@ const gens: Record<Generation, GenData> = {
     enabled: false,
     spritesDir: 'sun-moon',
     criesDir: '',
-    criesExt: '.wav',
   }),
 };
 
