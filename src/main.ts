@@ -7,7 +7,6 @@ type Generation = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 interface GenerationPaths {
   spritesDir: string;
   criesDir: string;
-  criesExt?: string;
 }
 
 interface GenerationConfig extends GenerationPaths {
@@ -39,7 +38,7 @@ const enrichPokemon = (def: PokemonDef, paths: GenerationPaths): Pokemon => {
   return {
     ...def,
     sprite: `media/sprites/${paths.spritesDir}/${spriteId}.png`,
-    cry: `media/cries${paths.criesDir}/${cryId}${paths.criesExt ?? '.mp3'}`,
+    cry: `media/cries${paths.criesDir}/${cryId}.mp3`,
   };
 };
 

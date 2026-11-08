@@ -153,13 +153,6 @@ const normalizeAudio = () => {
     rmSync(wav);
   }
 
-  const mainPath = join(ROOT, 'src/main.ts');
-  const main = readFileSync(mainPath, 'utf8');
-  const updated = main.replace(/^\s*criesExt: '\.wav',\n/m, '');
-  if (updated !== main) {
-    writeFileSync(mainPath, updated);
-  }
-
   console.log(`Converted ${wavs.length} WAV cries to MP3.`);
 };
 
