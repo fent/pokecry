@@ -261,6 +261,8 @@ button {
   left: 50px;
   bottom: 0;
   width: calc(100% - 200px);
+  /* Room above the first row so its tooltip isn't clipped by overflow. */
+  padding: 3em 1em 1em;
   overflow-y: auto;
 }
 
