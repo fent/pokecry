@@ -3853,6 +3853,535 @@ pokemon.gen8 = [
 ];
 
 pokemon.gen9 = [
+  {
+    "species_id": "906",
+    "identifier": "sprigatito"
+  },
+  {
+    "species_id": "907",
+    "identifier": "floragato"
+  },
+  {
+    "species_id": "908",
+    "identifier": "meowscarada"
+  },
+  {
+    "species_id": "909",
+    "identifier": "fuecoco"
+  },
+  {
+    "species_id": "910",
+    "identifier": "crocalor"
+  },
+  {
+    "species_id": "911",
+    "identifier": "skeledirge"
+  },
+  {
+    "species_id": "912",
+    "identifier": "quaxly"
+  },
+  {
+    "species_id": "913",
+    "identifier": "quaxwell"
+  },
+  {
+    "species_id": "914",
+    "identifier": "quaquaval"
+  },
+  {
+    "species_id": "915",
+    "identifier": "lechonk"
+  },
+  {
+    "species_id": "916",
+    "identifier": "oinkologne",
+    "forms": [
+      "!male",
+      "female"
+    ],
+    "formSounds": true
+  },
+  {
+    "species_id": "917",
+    "identifier": "tarountula"
+  },
+  {
+    "species_id": "918",
+    "identifier": "spidops"
+  },
+  {
+    "species_id": "919",
+    "identifier": "nymble"
+  },
+  {
+    "species_id": "920",
+    "identifier": "lokix"
+  },
+  {
+    "species_id": "921",
+    "identifier": "pawmi"
+  },
+  {
+    "species_id": "922",
+    "identifier": "pawmo"
+  },
+  {
+    "species_id": "923",
+    "identifier": "pawmot"
+  },
+  {
+    "species_id": "924",
+    "identifier": "tandemaus"
+  },
+  {
+    "species_id": "925",
+    "identifier": "maushold",
+    "forms": [
+      "!family-of-four",
+      "family-of-three"
+    ],
+    "formSounds": true
+  },
+  {
+    "species_id": "926",
+    "identifier": "fidough"
+  },
+  {
+    "species_id": "927",
+    "identifier": "dachsbun"
+  },
+  {
+    "species_id": "928",
+    "identifier": "smoliv"
+  },
+  {
+    "species_id": "929",
+    "identifier": "dolliv"
+  },
+  {
+    "species_id": "930",
+    "identifier": "arboliva"
+  },
+  {
+    "species_id": "931",
+    "identifier": "squawkabilly",
+    "forms": [
+      "!green-plumage",
+      "blue-plumage",
+      "yellow-plumage",
+      "white-plumage"
+    ],
+    "formSounds": true
+  },
+  {
+    "species_id": "932",
+    "identifier": "nacli"
+  },
+  {
+    "species_id": "933",
+    "identifier": "naclstack"
+  },
+  {
+    "species_id": "934",
+    "identifier": "garganacl"
+  },
+  {
+    "species_id": "935",
+    "identifier": "charcadet"
+  },
+  {
+    "species_id": "936",
+    "identifier": "armarouge"
+  },
+  {
+    "species_id": "937",
+    "identifier": "ceruledge"
+  },
+  {
+    "species_id": "938",
+    "identifier": "tadbulb"
+  },
+  {
+    "species_id": "939",
+    "identifier": "bellibolt"
+  },
+  {
+    "species_id": "940",
+    "identifier": "wattrel"
+  },
+  {
+    "species_id": "941",
+    "identifier": "kilowattrel"
+  },
+  {
+    "species_id": "942",
+    "identifier": "maschiff"
+  },
+  {
+    "species_id": "943",
+    "identifier": "mabosstiff"
+  },
+  {
+    "species_id": "944",
+    "identifier": "shroodle"
+  },
+  {
+    "species_id": "945",
+    "identifier": "grafaiai"
+  },
+  {
+    "species_id": "946",
+    "identifier": "bramblin"
+  },
+  {
+    "species_id": "947",
+    "identifier": "brambleghast"
+  },
+  {
+    "species_id": "948",
+    "identifier": "toedscool"
+  },
+  {
+    "species_id": "949",
+    "identifier": "toedscruel"
+  },
+  {
+    "species_id": "950",
+    "identifier": "klawf"
+  },
+  {
+    "species_id": "951",
+    "identifier": "capsakid"
+  },
+  {
+    "species_id": "952",
+    "identifier": "scovillain"
+  },
+  {
+    "species_id": "953",
+    "identifier": "rellor"
+  },
+  {
+    "species_id": "954",
+    "identifier": "rabsca"
+  },
+  {
+    "species_id": "955",
+    "identifier": "flittle"
+  },
+  {
+    "species_id": "956",
+    "identifier": "espathra"
+  },
+  {
+    "species_id": "957",
+    "identifier": "tinkatink"
+  },
+  {
+    "species_id": "958",
+    "identifier": "tinkatuff"
+  },
+  {
+    "species_id": "959",
+    "identifier": "tinkaton"
+  },
+  {
+    "species_id": "960",
+    "identifier": "wiglett"
+  },
+  {
+    "species_id": "961",
+    "identifier": "wugtrio"
+  },
+  {
+    "species_id": "962",
+    "identifier": "bombirdier"
+  },
+  {
+    "species_id": "963",
+    "identifier": "finizen"
+  },
+  {
+    "species_id": "964",
+    "identifier": "palafin",
+    "forms": [
+      "!zero",
+      "hero"
+    ],
+    "formSounds": true
+  },
+  {
+    "species_id": "965",
+    "identifier": "varoom"
+  },
+  {
+    "species_id": "966",
+    "identifier": "revavroom"
+  },
+  {
+    "species_id": "967",
+    "identifier": "cyclizar"
+  },
+  {
+    "species_id": "968",
+    "identifier": "orthworm"
+  },
+  {
+    "species_id": "969",
+    "identifier": "glimmet"
+  },
+  {
+    "species_id": "970",
+    "identifier": "glimmora"
+  },
+  {
+    "species_id": "971",
+    "identifier": "greavard"
+  },
+  {
+    "species_id": "972",
+    "identifier": "houndstone"
+  },
+  {
+    "species_id": "973",
+    "identifier": "flamigo"
+  },
+  {
+    "species_id": "974",
+    "identifier": "cetoddle"
+  },
+  {
+    "species_id": "975",
+    "identifier": "cetitan"
+  },
+  {
+    "species_id": "976",
+    "identifier": "veluza"
+  },
+  {
+    "species_id": "977",
+    "identifier": "dondozo"
+  },
+  {
+    "species_id": "978",
+    "identifier": "tatsugiri",
+    "forms": [
+      "!curly",
+      "droopy",
+      "stretchy"
+    ],
+    "formSounds": true
+  },
+  {
+    "species_id": "979",
+    "identifier": "annihilape"
+  },
+  {
+    "species_id": "980",
+    "identifier": "clodsire"
+  },
+  {
+    "species_id": "981",
+    "identifier": "farigiraf"
+  },
+  {
+    "species_id": "982",
+    "identifier": "dudunsparce",
+    "forms": [
+      "!two-segment",
+      "three-segment"
+    ],
+    "formSounds": true
+  },
+  {
+    "species_id": "983",
+    "identifier": "kingambit"
+  },
+  {
+    "species_id": "984",
+    "identifier": "great-tusk"
+  },
+  {
+    "species_id": "985",
+    "identifier": "scream-tail"
+  },
+  {
+    "species_id": "986",
+    "identifier": "brute-bonnet"
+  },
+  {
+    "species_id": "987",
+    "identifier": "flutter-mane"
+  },
+  {
+    "species_id": "988",
+    "identifier": "slither-wing"
+  },
+  {
+    "species_id": "989",
+    "identifier": "sandy-shocks"
+  },
+  {
+    "species_id": "990",
+    "identifier": "iron-treads"
+  },
+  {
+    "species_id": "991",
+    "identifier": "iron-bundle"
+  },
+  {
+    "species_id": "992",
+    "identifier": "iron-hands"
+  },
+  {
+    "species_id": "993",
+    "identifier": "iron-jugulis"
+  },
+  {
+    "species_id": "994",
+    "identifier": "iron-moth"
+  },
+  {
+    "species_id": "995",
+    "identifier": "iron-thorns"
+  },
+  {
+    "species_id": "996",
+    "identifier": "frigibax"
+  },
+  {
+    "species_id": "997",
+    "identifier": "arctibax"
+  },
+  {
+    "species_id": "998",
+    "identifier": "baxcalibur"
+  },
+  {
+    "species_id": "999",
+    "identifier": "gimmighoul",
+    "forms": [
+      "!chest",
+      "roaming"
+    ],
+    "formSounds": true
+  },
+  {
+    "species_id": "1000",
+    "identifier": "gholdengo"
+  },
+  {
+    "species_id": "1001",
+    "identifier": "wo-chien"
+  },
+  {
+    "species_id": "1002",
+    "identifier": "chien-pao"
+  },
+  {
+    "species_id": "1003",
+    "identifier": "ting-lu"
+  },
+  {
+    "species_id": "1004",
+    "identifier": "chi-yu"
+  },
+  {
+    "species_id": "1005",
+    "identifier": "roaring-moon"
+  },
+  {
+    "species_id": "1006",
+    "identifier": "iron-valiant"
+  },
+  {
+    "species_id": "1007",
+    "identifier": "koraidon"
+  },
+  {
+    "species_id": "1008",
+    "identifier": "miraidon"
+  },
+  {
+    "species_id": "1009",
+    "identifier": "walking-wake"
+  },
+  {
+    "species_id": "1010",
+    "identifier": "iron-leaves"
+  },
+  {
+    "species_id": "1011",
+    "identifier": "dipplin"
+  },
+  {
+    "species_id": "1012",
+    "identifier": "poltchageist"
+  },
+  {
+    "species_id": "1013",
+    "identifier": "sinistcha"
+  },
+  {
+    "species_id": "1014",
+    "identifier": "okidogi"
+  },
+  {
+    "species_id": "1015",
+    "identifier": "munkidori"
+  },
+  {
+    "species_id": "1016",
+    "identifier": "fezandipiti"
+  },
+  {
+    "species_id": "1017",
+    "identifier": "ogerpon",
+    "forms": [
+      "wellspring-mask",
+      "hearthflame-mask",
+      "cornerstone-mask"
+    ],
+    "formSounds": true
+  },
+  {
+    "species_id": "1018",
+    "identifier": "archaludon"
+  },
+  {
+    "species_id": "1019",
+    "identifier": "hydrapple"
+  },
+  {
+    "species_id": "1020",
+    "identifier": "gouging-fire"
+  },
+  {
+    "species_id": "1021",
+    "identifier": "raging-bolt"
+  },
+  {
+    "species_id": "1022",
+    "identifier": "iron-boulder"
+  },
+  {
+    "species_id": "1023",
+    "identifier": "iron-crown"
+  },
+  {
+    "species_id": "1024",
+    "identifier": "terapagos",
+    "forms": [
+      "terastal",
+      "stellar"
+    ],
+    "formSounds": true
+  },
+  {
+    "species_id": "1025",
+    "identifier": "pecharunt"
+  },
 ];
 
 Object.assign(window, { pokemon });

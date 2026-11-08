@@ -54,6 +54,27 @@ const generationButtons = (): HTMLButtonElement[] =>
   Array.from(document.querySelectorAll<HTMLButtonElement>('.gen[data-gen]'));
 const filler = (): HTMLHeadingElement => document.querySelector<HTMLHeadingElement>('.filler')!;
 
+type PokemonWithForms = { species_id: string; forms?: string[] };
+
+const generationData = (key: 'gen8' | 'gen9'): PokemonWithForms[] =>
+  (window as unknown as { pokemon: Record<string, PokemonWithForms[]> }).pokemon[key];
+
+const assertGenerationAssets = (pokemonList: PokemonWithForms[], spriteDir: string): void => {
+  for (const pokemon of pokemonList) {
+    expect(existsSync(`media/sprites/${spriteDir}/${pokemon.species_id}.png`)).toBe(true);
+    expect(existsSync(`media/cries/latest/${pokemon.species_id}.mp3`)).toBe(true);
+
+    for (const form of pokemon.forms ?? []) {
+      if (form.startsWith('!')) {
+        continue;
+      }
+      const name = form.replace(/^@/, '');
+      expect(existsSync(`media/sprites/${spriteDir}/${pokemon.species_id}-${name}.png`)).toBe(true);
+      expect(existsSync(`media/cries/latest/${pokemon.species_id}-${name}.mp3`)).toBe(true);
+    }
+  }
+};
+
 const currentAudio = (): FakeAudio => {
   const cry = [...audios].reverse().find((audio) => audio.src !== 'media/ping.mp3');
   if (!cry) {
@@ -142,12 +163,15 @@ describe('pokecry', () => {
     expect(document.querySelector('.gen-1')?.getAttribute('aria-pressed')).toBe('true');
   });
 
-  it('includes generation 8 with alternate forms', async () => {
+  it('includes generations 8 and 9 with alternate forms', async () => {
     await start();
 
-    const gen8 = (window as unknown as { pokemon: { gen8: { forms?: string[] }[] } }).pokemon.gen8;
+    const gen8 = generationData('gen8');
+    const gen9 = generationData('gen9');
     expect(gen8).toHaveLength(96);
+    expect(gen9).toHaveLength(120);
     expect(gen8.some((pokemon) => pokemon.forms?.some((form) => form.startsWith('!')))).toBe(true);
+    expect(gen9.some((pokemon) => pokemon.forms?.some((form) => form.startsWith('!')))).toBe(true);
   });
 
   it('excludes mega and gmax forms', async () => {
@@ -162,30 +186,11 @@ describe('pokecry', () => {
     ).toBe(false);
   });
 
-  it('has assets for every generation 8 Pokemon and form', async () => {
+  it('has assets for every generation 8 and 9 Pokemon and form', async () => {
     await start();
 
-    const gen8 = (
-      window as unknown as {
-        pokemon: { gen8: { species_id: string; forms?: string[] }[] };
-      }
-    ).pokemon.gen8;
-
-    for (const pokemon of gen8) {
-      expect(existsSync(`media/sprites/sword-shield/${pokemon.species_id}.png`)).toBe(true);
-      expect(existsSync(`media/cries/latest/${pokemon.species_id}.mp3`)).toBe(true);
-
-      for (const form of pokemon.forms ?? []) {
-        if (form.startsWith('!')) {
-          continue;
-        }
-        const name = form.replace(/^@/, '');
-        expect(existsSync(`media/sprites/sword-shield/${pokemon.species_id}-${name}.png`)).toBe(
-          true,
-        );
-        expect(existsSync(`media/cries/latest/${pokemon.species_id}-${name}.mp3`)).toBe(true);
-      }
-    }
+    assertGenerationAssets(generationData('gen8'), 'sword-shield');
+    assertGenerationAssets(generationData('gen9'), 'scarlet-violet');
   });
 
   it('plays the current cry from the play button', async () => {
