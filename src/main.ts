@@ -346,7 +346,10 @@ const displayEndScreen = (): void => {
     image.alt = '';
     cry.addEventListener('play', () => setRumble(image, true));
     cry.addEventListener('ended', () => setRumble(image, false));
-    wrapper.addEventListener('click', () => cry.play());
+    wrapper.addEventListener('click', () => {
+      cry.currentTime = 0;
+      void cry.play().catch(() => undefined);
+    });
     wrapper.appendChild(image);
     const timer = window.setTimeout(
       () => {

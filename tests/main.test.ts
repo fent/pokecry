@@ -10,6 +10,7 @@ class FakeAudio {
   src: string;
   volume = 1;
   autoplay = false;
+  currentTime = 0;
   private listeners = new Map<string, Listener[]>();
 
   constructor(src: string) {
@@ -459,14 +460,21 @@ describe('pokecry', () => {
 
     const endAudio = [...audios].reverse().find((audio) => audio.src === wrongCry);
     expect(endAudio).toBeDefined();
+    endAudio!.currentTime = 5;
     const play = vi.spyOn(endAudio!, 'play');
     sprites[0].click();
+    expect(endAudio!.currentTime).toBe(0);
     expect(play).toHaveBeenCalledOnce();
 
     const image = sprites[0].querySelector('img')!;
     expect(image.classList.contains('rumble')).toBe(true);
     endAudio!.emit('ended');
     expect(image.classList.contains('rumble')).toBe(false);
+
+    play.mockRejectedValueOnce(new Error('blocked'));
+    sprites[0].click();
+    await Promise.resolve();
+    expect(play).toHaveBeenCalledTimes(2);
   });
 
   it('falls back to the end screen when a round has no Pokemon left', async () => {
