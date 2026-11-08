@@ -38,7 +38,7 @@ const enrichPokemon = (def: PokemonDef, paths: GenerationPaths): Pokemon => {
   return {
     ...def,
     sprite: `media/sprites/${paths.spritesDir}/${spriteId}.png`,
-    cry: `media/cries${paths.criesDir}/${cryId}.mp3`,
+    cry: `media/cries/${paths.criesDir}/${cryId}.mp3`,
   };
 };
 
@@ -50,20 +50,24 @@ const createGeneration = (defs: PokemonDef[], config: GenerationConfig): GenData
 // For every generation, keep a copy of all pokemon and the pokemon
 // that are left to be guessed from that generation.
 const gens: Record<Generation, GenData> = {
-  1: createGeneration(pokemon.gen1, { enabled: true, spritesDir: 'yellow', criesDir: '/old' }),
-  2: createGeneration(pokemon.gen2, { enabled: false, spritesDir: 'crystal', criesDir: '/old' }),
-  3: createGeneration(pokemon.gen3, { enabled: false, spritesDir: 'emerald', criesDir: '/old' }),
-  4: createGeneration(pokemon.gen4, { enabled: false, spritesDir: 'platinum', criesDir: '/old' }),
+  1: createGeneration(pokemon.gen1, { enabled: true, spritesDir: 'yellow', criesDir: 'legacy' }),
+  2: createGeneration(pokemon.gen2, { enabled: false, spritesDir: 'crystal', criesDir: 'legacy' }),
+  3: createGeneration(pokemon.gen3, { enabled: false, spritesDir: 'emerald', criesDir: 'legacy' }),
+  4: createGeneration(pokemon.gen4, {
+    enabled: false,
+    spritesDir: 'platinum',
+    criesDir: 'legacy',
+  }),
   5: createGeneration(pokemon.gen5, {
     enabled: false,
     spritesDir: 'black-white',
-    criesDir: '/old',
+    criesDir: 'legacy',
   }),
-  6: createGeneration(pokemon.gen6, { enabled: false, spritesDir: 'x-y', criesDir: '' }),
+  6: createGeneration(pokemon.gen6, { enabled: false, spritesDir: 'x-y', criesDir: 'latest' }),
   7: createGeneration(pokemon.gen7, {
     enabled: false,
     spritesDir: 'sun-moon',
-    criesDir: '',
+    criesDir: 'latest',
   }),
 };
 

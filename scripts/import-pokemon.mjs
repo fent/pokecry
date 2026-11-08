@@ -219,7 +219,7 @@ const importPokemon = async (generation, ids, force) => {
     await download(cryUrl, crySource, force);
 
     const spriteTarget = join(ROOT, 'media/sprites', config.spritesDir, `${id}.png`);
-    const cryTarget = join(ROOT, 'media/cries', `${id}.mp3`);
+    const cryTarget = join(ROOT, 'media/cries', 'latest', `${id}.mp3`);
     mkdirSync(dirname(spriteTarget), { recursive: true });
     mkdirSync(dirname(cryTarget), { recursive: true });
 
