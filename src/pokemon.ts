@@ -3069,10 +3069,6 @@ pokemon.gen7 = [
   },
   {
     "species_id": "735",
-    "identifier": "gumshoos"
-  },
-  {
-    "species_id": "735",
     "identifier": "gumshoos",
     "forms": ["totem"],
     "formSounds": false
@@ -3369,6 +3365,34 @@ pokemon.gen7 = [
   {
     "species_id": "802",
     "identifier": "marshadow"
+  },
+  {
+    "species_id": "803",
+    "identifier": "poipole"
+  },
+  {
+    "species_id": "804",
+    "identifier": "naganadel"
+  },
+  {
+    "species_id": "805",
+    "identifier": "stakataka"
+  },
+  {
+    "species_id": "806",
+    "identifier": "blacephalon"
+  },
+  {
+    "species_id": "807",
+    "identifier": "zeraora"
+  },
+  {
+    "species_id": "808",
+    "identifier": "meltan"
+  },
+  {
+    "species_id": "809",
+    "identifier": "melmetal"
   },
 ];
 
