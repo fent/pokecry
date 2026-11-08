@@ -216,7 +216,6 @@ let theCry: HTMLAudioElement;
 // Called whenever the user guesses on a pokemon.
 const guess = (option: HTMLButtonElement): void => {
   totalGuesses++;
-  setHidden(endGameElement, true);
   roundActive = false;
   const isCorrect = option.dataset.speciesId === thePokemon.species_id;
   restorePlayFocus = document.activeElement === option;
@@ -305,7 +304,6 @@ const nextRound = (): void => {
     }
   });
   setHidden(playElement, false);
-  setHidden(endGameElement, true);
   playElement.disabled = false;
   if (restorePlayFocus) {
     playElement.focus();

@@ -411,6 +411,20 @@ describe('pokecry', () => {
     expect(endGame().classList.contains('hidden')).toBe(false);
   });
 
+  it('keeps end game visible once it has appeared', async () => {
+    await start();
+    guessCorrect();
+    advanceRound();
+    currentAudio().emit('ended');
+    expect(endGame().classList.contains('hidden')).toBe(false);
+
+    guessCorrect();
+    expect(endGame().classList.contains('hidden')).toBe(false);
+
+    advanceRound();
+    expect(endGame().classList.contains('hidden')).toBe(false);
+  });
+
   it('ends the game on demand with the wrong answers', async () => {
     await start();
     guessWrong();
