@@ -72,7 +72,7 @@ export const planForms = ({ speciesId, identifier, variants, formsByPokemon }) =
       }
 
       seen.add(name);
-      forms.push({ variant, name });
+      forms.push({ variant, name, form });
     }
   }
 

@@ -3,8 +3,11 @@ interface PokemonDef {
   identifier: string;
   name?: string;
   forms?: string[];
+  formGenerations?: Record<string, number>;
   formSounds?: boolean;
   formSprites?: boolean;
+  baseForm?: boolean;
+  baseCryDir?: string;
 }
 
 interface Pokemon extends PokemonDef {
@@ -111,11 +114,27 @@ pokemon.gen1 = [
   },
   {
     "species_id": "19",
-    "identifier": "rattata"
+    "identifier": "rattata",
+    "forms": [
+      "alola"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "alola": 7
+    }
   },
   {
     "species_id": "20",
-    "identifier": "raticate"
+    "identifier": "raticate",
+    "forms": [
+      "alola",
+      "totem-alola"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "alola": 7,
+      "totem-alola": 7
+    }
   },
   {
     "species_id": "21",
@@ -135,19 +154,75 @@ pokemon.gen1 = [
   },
   {
     "species_id": "25",
-    "identifier": "pikachu"
+    "identifier": "pikachu",
+    "forms": [
+      "rock-star",
+      "belle",
+      "pop-star",
+      "phd",
+      "libre",
+      "cosplay",
+      "original-cap",
+      "hoenn-cap",
+      "sinnoh-cap",
+      "unova-cap",
+      "kalos-cap",
+      "alola-cap",
+      "partner-cap",
+      "starter",
+      "world-cap"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "rock-star": 6,
+      "belle": 6,
+      "pop-star": 6,
+      "phd": 6,
+      "libre": 6,
+      "cosplay": 6,
+      "original-cap": 7,
+      "hoenn-cap": 7,
+      "sinnoh-cap": 7,
+      "unova-cap": 7,
+      "kalos-cap": 7,
+      "alola-cap": 7,
+      "partner-cap": 7,
+      "starter": 7,
+      "world-cap": 8
+    }
   },
   {
     "species_id": "26",
-    "identifier": "raichu"
+    "identifier": "raichu",
+    "forms": [
+      "alola"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "alola": 7
+    }
   },
   {
     "species_id": "27",
-    "identifier": "sandshrew"
+    "identifier": "sandshrew",
+    "forms": [
+      "alola"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "alola": 7
+    }
   },
   {
     "species_id": "28",
-    "identifier": "sandslash"
+    "identifier": "sandslash",
+    "forms": [
+      "alola"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "alola": 7
+    }
   },
   {
     "species_id": "29",
@@ -185,11 +260,25 @@ pokemon.gen1 = [
   },
   {
     "species_id": "37",
-    "identifier": "vulpix"
+    "identifier": "vulpix",
+    "forms": [
+      "alola"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "alola": 7
+    }
   },
   {
     "species_id": "38",
-    "identifier": "ninetales"
+    "identifier": "ninetales",
+    "forms": [
+      "alola"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "alola": 7
+    }
   },
   {
     "species_id": "39",
@@ -237,19 +326,49 @@ pokemon.gen1 = [
   },
   {
     "species_id": "50",
-    "identifier": "diglett"
+    "identifier": "diglett",
+    "forms": [
+      "alola"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "alola": 7
+    }
   },
   {
     "species_id": "51",
-    "identifier": "dugtrio"
+    "identifier": "dugtrio",
+    "forms": [
+      "alola"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "alola": 7
+    }
   },
   {
     "species_id": "52",
-    "identifier": "meowth"
+    "identifier": "meowth",
+    "forms": [
+      "alola",
+      "galar"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "alola": 7,
+      "galar": 8
+    }
   },
   {
     "species_id": "53",
-    "identifier": "persian"
+    "identifier": "persian",
+    "forms": [
+      "alola"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "alola": 7
+    }
   },
   {
     "species_id": "54",
@@ -269,11 +388,25 @@ pokemon.gen1 = [
   },
   {
     "species_id": "58",
-    "identifier": "growlithe"
+    "identifier": "growlithe",
+    "forms": [
+      "hisui"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "hisui": 8
+    }
   },
   {
     "species_id": "59",
-    "identifier": "arcanine"
+    "identifier": "arcanine",
+    "forms": [
+      "hisui"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "hisui": 8
+    }
   },
   {
     "species_id": "60",
@@ -333,31 +466,80 @@ pokemon.gen1 = [
   },
   {
     "species_id": "74",
-    "identifier": "geodude"
+    "identifier": "geodude",
+    "forms": [
+      "alola"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "alola": 7
+    }
   },
   {
     "species_id": "75",
-    "identifier": "graveler"
+    "identifier": "graveler",
+    "forms": [
+      "alola"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "alola": 7
+    }
   },
   {
     "species_id": "76",
-    "identifier": "golem"
+    "identifier": "golem",
+    "forms": [
+      "alola"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "alola": 7
+    }
   },
   {
     "species_id": "77",
-    "identifier": "ponyta"
+    "identifier": "ponyta",
+    "forms": [
+      "galar"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "galar": 8
+    }
   },
   {
     "species_id": "78",
-    "identifier": "rapidash"
+    "identifier": "rapidash",
+    "forms": [
+      "galar"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "galar": 8
+    }
   },
   {
     "species_id": "79",
-    "identifier": "slowpoke"
+    "identifier": "slowpoke",
+    "forms": [
+      "galar"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "galar": 8
+    }
   },
   {
     "species_id": "80",
-    "identifier": "slowbro"
+    "identifier": "slowbro",
+    "forms": [
+      "galar"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "galar": 8
+    }
   },
   {
     "species_id": "81",
@@ -369,7 +551,14 @@ pokemon.gen1 = [
   },
   {
     "species_id": "83",
-    "identifier": "farfetchd"
+    "identifier": "farfetchd",
+    "forms": [
+      "galar"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "galar": 8
+    }
   },
   {
     "species_id": "84",
@@ -389,11 +578,25 @@ pokemon.gen1 = [
   },
   {
     "species_id": "88",
-    "identifier": "grimer"
+    "identifier": "grimer",
+    "forms": [
+      "alola"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "alola": 7
+    }
   },
   {
     "species_id": "89",
-    "identifier": "muk"
+    "identifier": "muk",
+    "forms": [
+      "alola"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "alola": 7
+    }
   },
   {
     "species_id": "90",
@@ -437,11 +640,25 @@ pokemon.gen1 = [
   },
   {
     "species_id": "100",
-    "identifier": "voltorb"
+    "identifier": "voltorb",
+    "forms": [
+      "hisui"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "hisui": 8
+    }
   },
   {
     "species_id": "101",
-    "identifier": "electrode"
+    "identifier": "electrode",
+    "forms": [
+      "hisui"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "hisui": 8
+    }
   },
   {
     "species_id": "102",
@@ -449,7 +666,14 @@ pokemon.gen1 = [
   },
   {
     "species_id": "103",
-    "identifier": "exeggutor"
+    "identifier": "exeggutor",
+    "forms": [
+      "alola"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "alola": 7
+    }
   },
   {
     "species_id": "104",
@@ -457,7 +681,16 @@ pokemon.gen1 = [
   },
   {
     "species_id": "105",
-    "identifier": "marowak"
+    "identifier": "marowak",
+    "forms": [
+      "alola",
+      "totem"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "alola": 7,
+      "totem": 7
+    }
   },
   {
     "species_id": "106",
@@ -477,7 +710,14 @@ pokemon.gen1 = [
   },
   {
     "species_id": "110",
-    "identifier": "weezing"
+    "identifier": "weezing",
+    "forms": [
+      "galar"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "galar": 8
+    }
   },
   {
     "species_id": "111",
@@ -526,7 +766,13 @@ pokemon.gen1 = [
   {
     "species_id": "122",
     "identifier": "mr-mime",
-    "name": "mr. mime"
+    "forms": [
+      "galar"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "galar": 8
+    }
   },
   {
     "species_id": "123",
@@ -550,7 +796,18 @@ pokemon.gen1 = [
   },
   {
     "species_id": "128",
-    "identifier": "tauros"
+    "identifier": "tauros",
+    "forms": [
+      "paldea-combat-breed",
+      "paldea-blaze-breed",
+      "paldea-aqua-breed"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "paldea-combat-breed": 9,
+      "paldea-blaze-breed": 9,
+      "paldea-aqua-breed": 9
+    }
   },
   {
     "species_id": "129",
@@ -570,7 +827,14 @@ pokemon.gen1 = [
   },
   {
     "species_id": "133",
-    "identifier": "eevee"
+    "identifier": "eevee",
+    "forms": [
+      "starter"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "starter": 7
+    }
   },
   {
     "species_id": "134",
@@ -614,15 +878,36 @@ pokemon.gen1 = [
   },
   {
     "species_id": "144",
-    "identifier": "articuno"
+    "identifier": "articuno",
+    "forms": [
+      "galar"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "galar": 8
+    }
   },
   {
     "species_id": "145",
-    "identifier": "zapdos"
+    "identifier": "zapdos",
+    "forms": [
+      "galar"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "galar": 8
+    }
   },
   {
     "species_id": "146",
-    "identifier": "moltres"
+    "identifier": "moltres",
+    "forms": [
+      "galar"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "galar": 8
+    }
   },
   {
     "species_id": "147",
@@ -669,7 +954,14 @@ pokemon.gen2 = [
   },
   {
     "species_id": "157",
-    "identifier": "typhlosion"
+    "identifier": "typhlosion",
+    "forms": [
+      "hisui"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "hisui": 8
+    }
   },
   {
     "species_id": "158",
@@ -733,7 +1025,10 @@ pokemon.gen2 = [
     "forms": [
       "spiky-eared"
     ],
-    "formSounds": false
+    "formSounds": false,
+    "formGenerations": {
+      "spiky-eared": 4
+    }
   },
   {
     "species_id": "173",
@@ -821,7 +1116,14 @@ pokemon.gen2 = [
   },
   {
     "species_id": "194",
-    "identifier": "wooper"
+    "identifier": "wooper",
+    "forms": [
+      "paldea"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "paldea": 9
+    }
   },
   {
     "species_id": "195",
@@ -841,7 +1143,14 @@ pokemon.gen2 = [
   },
   {
     "species_id": "199",
-    "identifier": "slowking"
+    "identifier": "slowking",
+    "forms": [
+      "galar"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "galar": 8
+    }
   },
   {
     "species_id": "200",
@@ -880,7 +1189,11 @@ pokemon.gen2 = [
       "exclamation",
       "question"
     ],
-    "formSounds": false
+    "formSounds": false,
+    "formGenerations": {
+      "exclamation": 3,
+      "question": 3
+    }
   },
   {
     "species_id": "202",
@@ -920,7 +1233,14 @@ pokemon.gen2 = [
   },
   {
     "species_id": "211",
-    "identifier": "qwilfish"
+    "identifier": "qwilfish",
+    "forms": [
+      "hisui"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "hisui": 8
+    }
   },
   {
     "species_id": "212",
@@ -936,7 +1256,14 @@ pokemon.gen2 = [
   },
   {
     "species_id": "215",
-    "identifier": "sneasel"
+    "identifier": "sneasel",
+    "forms": [
+      "hisui"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "hisui": 8
+    }
   },
   {
     "species_id": "216",
@@ -964,7 +1291,14 @@ pokemon.gen2 = [
   },
   {
     "species_id": "222",
-    "identifier": "corsola"
+    "identifier": "corsola",
+    "forms": [
+      "galar"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "galar": 8
+    }
   },
   {
     "species_id": "223",
@@ -1130,11 +1464,25 @@ pokemon.gen3 = [
   },
   {
     "species_id": "263",
-    "identifier": "zigzagoon"
+    "identifier": "zigzagoon",
+    "forms": [
+      "galar"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "galar": 8
+    }
   },
   {
     "species_id": "264",
-    "identifier": "linoone"
+    "identifier": "linoone",
+    "forms": [
+      "galar"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "galar": 8
+    }
   },
   {
     "species_id": "265",
@@ -2034,11 +2382,25 @@ pokemon.gen4 = [
   },
   {
     "species_id": "483",
-    "identifier": "dialga"
+    "identifier": "dialga",
+    "forms": [
+      "origin"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "origin": 8
+    }
   },
   {
     "species_id": "484",
-    "identifier": "palkia"
+    "identifier": "palkia",
+    "forms": [
+      "origin"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "origin": 8
+    }
   },
   {
     "species_id": "485",
@@ -2100,7 +2462,10 @@ pokemon.gen4 = [
       "unknown",
       "fairy"
     ],
-    "formSounds": false
+    "formSounds": false,
+    "formGenerations": {
+      "fairy": 6
+    }
   }
 ];
 pokemon.gen5 = [
@@ -2142,7 +2507,14 @@ pokemon.gen5 = [
   },
   {
     "species_id": "503",
-    "identifier": "samurott"
+    "identifier": "samurott",
+    "forms": [
+      "hisui"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "hisui": 8
+    }
   },
   {
     "species_id": "504",
@@ -2326,13 +2698,27 @@ pokemon.gen5 = [
   },
   {
     "species_id": "549",
-    "identifier": "lilligant"
+    "identifier": "lilligant",
+    "forms": [
+      "hisui"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "hisui": 8
+    }
   },
   {
     "species_id": "550",
     "identifier": "basculin",
-    "forms": ["!red-striped", "blue-striped"],
-    "formSounds": false
+    "forms": [
+      "!red-striped",
+      "blue-striped",
+      "white-striped"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "white-striped": 8
+    }
   },
   {
     "species_id": "551",
@@ -2348,13 +2734,29 @@ pokemon.gen5 = [
   },
   {
     "species_id": "554",
-    "identifier": "darumaka"
+    "identifier": "darumaka",
+    "forms": [
+      "galar"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "galar": 8
+    }
   },
   {
     "species_id": "555",
     "identifier": "darmanitan",
-    "forms": ["!standard", "zen"],
-    "formSounds": false
+    "forms": [
+      "!standard",
+      "zen",
+      "galar-standard",
+      "galar-zen"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "galar-standard": 8,
+      "galar-zen": 8
+    }
   },
   {
     "species_id": "556",
@@ -2382,7 +2784,14 @@ pokemon.gen5 = [
   },
   {
     "species_id": "562",
-    "identifier": "yamask"
+    "identifier": "yamask",
+    "forms": [
+      "galar"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "galar": 8
+    }
   },
   {
     "species_id": "563",
@@ -2414,11 +2823,25 @@ pokemon.gen5 = [
   },
   {
     "species_id": "570",
-    "identifier": "zorua"
+    "identifier": "zorua",
+    "forms": [
+      "hisui"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "hisui": 8
+    }
   },
   {
     "species_id": "571",
-    "identifier": "zoroark"
+    "identifier": "zoroark",
+    "forms": [
+      "hisui"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "hisui": 8
+    }
   },
   {
     "species_id": "572",
@@ -2620,7 +3043,14 @@ pokemon.gen5 = [
   },
   {
     "species_id": "618",
-    "identifier": "stunfisk"
+    "identifier": "stunfisk",
+    "forms": [
+      "galar"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "galar": 8
+    }
   },
   {
     "species_id": "619",
@@ -2660,7 +3090,14 @@ pokemon.gen5 = [
   },
   {
     "species_id": "628",
-    "identifier": "braviary"
+    "identifier": "braviary",
+    "forms": [
+      "hisui"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "hisui": 8
+    }
   },
   {
     "species_id": "629",
@@ -2796,7 +3233,16 @@ pokemon.gen6 = [
   },
   {
     "species_id": "658",
-    "identifier": "greninja"
+    "identifier": "greninja",
+    "forms": [
+      "battle-bond",
+      "ash"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "battle-bond": 7,
+      "ash": 7
+    }
   },
   {
     "species_id": "659",
@@ -3010,11 +3456,25 @@ pokemon.gen6 = [
   },
   {
     "species_id": "705",
-    "identifier": "sliggoo"
+    "identifier": "sliggoo",
+    "forms": [
+      "hisui"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "hisui": 8
+    }
   },
   {
     "species_id": "706",
-    "identifier": "goodra"
+    "identifier": "goodra",
+    "forms": [
+      "hisui"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "hisui": 8
+    }
   },
   {
     "species_id": "707",
@@ -3046,7 +3506,14 @@ pokemon.gen6 = [
   },
   {
     "species_id": "713",
-    "identifier": "avalugg"
+    "identifier": "avalugg",
+    "forms": [
+      "hisui"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "hisui": 8
+    }
   },
   {
     "species_id": "714",
@@ -3068,7 +3535,21 @@ pokemon.gen6 = [
   },
   {
     "species_id": "718",
-    "identifier": "zygarde"
+    "identifier": "zygarde",
+    "forms": [
+      "!50",
+      "10-power-construct",
+      "50-power-construct",
+      "complete",
+      "10"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "10": 7,
+      "10-power-construct": 7,
+      "50-power-construct": 7,
+      "complete": 7
+    }
   },
   {
     "species_id": "719",
@@ -3099,7 +3580,14 @@ pokemon.gen7 = [
   },
   {
     "species_id": "724",
-    "identifier": "decidueye"
+    "identifier": "decidueye",
+    "forms": [
+      "hisui"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "hisui": 8
+    }
   },
   {
     "species_id": "725",
@@ -4016,7 +4504,10 @@ pokemon.gen8 = [
     "forms": [
       "bloodmoon"
     ],
-    "formSounds": true
+    "formSounds": true,
+    "formGenerations": {
+      "bloodmoon": 9
+    }
   },
   {
     "species_id": "902",

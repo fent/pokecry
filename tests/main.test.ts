@@ -58,8 +58,11 @@ type PokemonWithForms = {
   species_id: string;
   identifier: string;
   forms?: string[];
+  formGenerations?: Record<string, number>;
   formSounds?: boolean;
   formSprites?: boolean;
+  baseForm?: boolean;
+  baseCryDir?: string;
 };
 
 const generationAssets: Record<string, [string, string]> = {
@@ -91,13 +94,20 @@ const assertGenerationAssets = (
         continue;
       }
       const name = form.replace(/^@/, '');
+      const formGeneration = pokemon.formGenerations?.[name];
+      const [formSpriteDir, formCryDir] = formGeneration
+        ? generationAssets[`gen${formGeneration}`]
+        : [spriteDir, cryDir];
+
       if (pokemon.formSprites !== false) {
-        expect(existsSync(`media/sprites/${spriteDir}/${pokemon.species_id}-${name}.png`)).toBe(
+        expect(existsSync(`media/sprites/${formSpriteDir}/${pokemon.species_id}-${name}.png`)).toBe(
           true,
         );
       }
       if (pokemon.formSounds) {
-        expect(existsSync(`media/cries/${cryDir}/${pokemon.species_id}-${name}.mp3`)).toBe(true);
+        expect(existsSync(`media/cries/${formCryDir}/${pokemon.species_id}-${name}.mp3`)).toBe(
+          true,
+        );
       }
     }
   }
@@ -271,6 +281,20 @@ describe('pokecry', () => {
     });
     expect(atForm.sprite).toContain('/201-eternal.png');
     expect(atForm.cry).toContain('/201-eternal.mp3');
+
+    random.mockReturnValueOnce(0.99);
+    const formOnly = hooks.resolvePokemon({
+      def: {
+        species_id: '201',
+        identifier: 'unown',
+        forms: ['exclamation'],
+        baseForm: false,
+        baseCryDir: 'legacy',
+      },
+      paths: { spritesDir: 'emerald', criesDir: 'legacy' },
+    });
+    expect(formOnly.sprite).toContain('/201-exclamation.png');
+    expect(formOnly.cry).toContain('/201.mp3');
   });
 
   it('excludes mega and gmax forms', async () => {
@@ -380,6 +404,63 @@ describe('pokecry', () => {
     expect(byId('754').forms).toEqual(['totem']);
     expect(byId('758').forms).toEqual(['totem']);
     expect(byId('777').forms).toEqual(['totem']);
+  });
+
+  it('moves later-generation forms into their introduction generation', async () => {
+    (window as unknown as { __POKECRY_TEST__: boolean }).__POKECRY_TEST__ = true;
+    await start();
+
+    const hooks = (
+      window as unknown as {
+        __pokecryTest: {
+          getGeneration: (generation: number) => PokemonWithForms[];
+        };
+      }
+    ).__pokecryTest;
+    const byId = (generation: number, id: string): PokemonWithForms => {
+      const pokemon = hooks
+        .getGeneration(generation)
+        .find((candidate) => candidate.species_id === id);
+      if (!pokemon) {
+        throw new Error(`Missing Pokemon ${id} in generation ${generation}`);
+      }
+      return pokemon;
+    };
+
+    expect(byId(2, '201').forms).not.toContain('exclamation');
+    const unown = byId(3, '201');
+    expect(unown.forms).toEqual(['exclamation', 'question']);
+    expect(unown.baseForm).toBe(false);
+
+    expect(byId(2, '172').forms).toBeUndefined();
+    expect(byId(4, '172').forms).toEqual(['spiky-eared']);
+
+    expect(byId(4, '493').forms).not.toContain('fairy');
+    expect(byId(6, '493').forms).toEqual(['fairy']);
+
+    expect(byId(8, '901').forms).toBeUndefined();
+    expect(byId(9, '901').forms).toEqual(['bloodmoon']);
+
+    expect(byId(1, '25').forms).toBeUndefined();
+    expect(byId(7, '25').forms).toEqual(
+      expect.arrayContaining(['original-cap', 'hoenn-cap', 'partner-cap']),
+    );
+    expect(byId(7, '25').baseForm).toBe(false);
+    expect(byId(8, '25').forms).toEqual(['world-cap']);
+
+    expect(byId(1, '19').forms).toBeUndefined();
+    expect(byId(7, '19').forms).toEqual(['alola']);
+
+    expect(byId(1, '52').forms).toBeUndefined();
+    expect(byId(7, '52').forms).toEqual(['alola']);
+    expect(byId(8, '52').forms).toEqual(['galar']);
+
+    expect(byId(1, '128').forms).toBeUndefined();
+    expect(byId(9, '128').forms).toEqual([
+      'paldea-combat-breed',
+      'paldea-blaze-breed',
+      'paldea-aqua-breed',
+    ]);
   });
 
   it('plays the current cry from the play button', async () => {

@@ -54,7 +54,11 @@ const importPokemon = async (generation, ids, force) => {
   const speciesRows = await loadCsv('pokemon_species.csv', force);
   const pokemonRows = await loadCsv('pokemon.csv', force);
   const formRows = await loadCsv('pokemon_forms.csv', force);
+  const versionGroupRows = await loadCsv('version_groups.csv', force);
 
+  const generationByVersionGroup = Object.fromEntries(
+    versionGroupRows.map((row) => [row.id, Number(row.generation_id)]),
+  );
   const speciesById = new Map(speciesRows.map((row) => [Number(row.id), row]));
   const pokemonBySpecies = new Map();
   for (const row of pokemonRows) {
@@ -89,6 +93,7 @@ const importPokemon = async (generation, ids, force) => {
       force,
       variants: pokemonBySpecies.get(String(id)) ?? [],
       formsByPokemon,
+      versionGroupGenerations: generationByVersionGroup,
     });
     entries.push(result.entry);
     skipped.push(...result.skipped);

@@ -13,7 +13,7 @@
  */
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { CACHE, CRIES_SHA, ROOT, SPRITES_SHA } from './config.js';
+import { CACHE, CRIES_SHA, GENERATIONS, ROOT, SPRITES_SHA } from './config.js';
 import { download, downloadOptional } from './files.js';
 import { formEntry, planForms, spriteCandidates } from './forms.js';
 import { pngSize, writeCry, writeSprite } from './media.js';
@@ -75,6 +75,11 @@ const importFormCry = async ({ id, name, variant, defaultVariant, config, force 
   return true;
 };
 
+const formGeneration = (form, fallback, versionGroupGenerations) => {
+  const versionGroup = form?.introduced_in_version_group_id;
+  return (versionGroup && versionGroupGenerations[versionGroup]) || fallback;
+};
+
 export const importSpecies = async ({
   id,
   species,
@@ -83,6 +88,7 @@ export const importSpecies = async ({
   force,
   variants,
   formsByPokemon,
+  versionGroupGenerations,
 }) => {
   const planned = planForms({
     speciesId: id,
@@ -93,15 +99,23 @@ export const importSpecies = async ({
   const spriteTarget = await ensureBaseAssets(id, config, force);
   const baseSize = pngSize(spriteTarget);
   const forms = [];
+  const formGenerations = {};
 
-  for (const { variant, name } of planned.forms) {
-    const formSpriteTarget = join(ROOT, 'media/sprites', config.spritesDir, `${id}-${name}.png`);
+  for (const { variant, name, form } of planned.forms) {
+    const formGenerationNumber = formGeneration(form, generation, versionGroupGenerations);
+    const formConfig = GENERATIONS[formGenerationNumber] ?? config;
+    const formSpriteTarget = join(
+      ROOT,
+      'media/sprites',
+      formConfig.spritesDir,
+      `${id}-${name}.png`,
+    );
 
     // Existing form assets are left alone; new ones probe the fallback chain.
     let sprite = null;
     if (force || !existsSync(formSpriteTarget)) {
       sprite = await findFormSprite(
-        spriteCandidates(config, variant, planned.defaultVariant, name),
+        spriteCandidates(formConfig, variant, planned.defaultVariant, name),
         force,
       );
     }
@@ -114,7 +128,7 @@ export const importSpecies = async ({
       // Artwork always needs resizing. Standard sprites from the modern PokeAPI
       // path also need it for Gen 1-4 folders, which use smaller sprites.
       const resize =
-        sprite.kind === 'artwork' || (sprite.kind === 'standard' && generation <= 4)
+        sprite.kind === 'artwork' || (sprite.kind === 'standard' && formGenerationNumber <= 4)
           ? {
               width: baseSize.width,
               height: baseSize.height,
@@ -129,10 +143,13 @@ export const importSpecies = async ({
       name,
       variant,
       defaultVariant: planned.defaultVariant,
-      config,
+      config: formConfig,
       force,
     });
     forms.push({ name, hasCry });
+    if (formGenerationNumber !== generation) {
+      formGenerations[name] = formGenerationNumber;
+    }
   }
 
   // Only write form fields when there is at least one alternate form.
@@ -141,6 +158,9 @@ export const importSpecies = async ({
   if (formData.alternateNames.length > 0) {
     entry.forms = formData.forms;
     entry.formSounds = formData.formSounds;
+    if (Object.keys(formGenerations).length > 0) {
+      entry.formGenerations = formGenerations;
+    }
   }
 
   return {

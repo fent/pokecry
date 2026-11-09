@@ -29,23 +29,26 @@ const resolvePokemon = (entry: PokemonEntry): Pokemon => {
   const def = entry.def;
   const formsAvailable =
     def.formSprites === false ? [] : (def.forms ?? []).filter((form) => form[0] !== '!');
-  const forms = ['', ...formsAvailable];
+  const forms = def.baseForm === false ? [] : [''];
+  forms.push(...formsAvailable);
   const form = forms[Math.floor(Math.random() * forms.length)];
 
   let spriteId = def.species_id;
   let cryId = def.species_id;
+  let cryDir = def.baseCryDir ?? entry.paths.criesDir;
   if (form) {
     const formName = form.replace(/^@/, '');
     spriteId += `-${formName}`;
     if (def.formSounds || form.startsWith('@')) {
       cryId += `-${formName}`;
+      cryDir = entry.paths.criesDir;
     }
   }
 
   return {
     ...def,
     sprite: `media/sprites/${entry.paths.spritesDir}/${spriteId}.png`,
-    cry: `media/cries/${entry.paths.criesDir}/${cryId}.mp3`,
+    cry: `media/cries/${cryDir}/${cryId}.mp3`,
   };
 };
 
@@ -54,39 +57,115 @@ const createGeneration = (defs: PokemonDef[], config: GenerationConfig): GenData
   return { ...config, pokemon: list, pokemonLeft: list.slice() };
 };
 
+const generations: Generation[] = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+const generationKeys: Record<Generation, keyof PokemonData> = {
+  1: 'gen1',
+  2: 'gen2',
+  3: 'gen3',
+  4: 'gen4',
+  5: 'gen5',
+  6: 'gen6',
+  7: 'gen7',
+  8: 'gen8',
+  9: 'gen9',
+};
+
+const generationConfigs: Record<Generation, GenerationConfig> = {
+  1: { enabled: true, spritesDir: 'yellow', criesDir: 'legacy' },
+  2: { enabled: false, spritesDir: 'crystal', criesDir: 'legacy' },
+  3: { enabled: false, spritesDir: 'emerald', criesDir: 'legacy' },
+  4: { enabled: false, spritesDir: 'platinum', criesDir: 'legacy' },
+  5: { enabled: false, spritesDir: 'black-white', criesDir: 'legacy' },
+  6: { enabled: false, spritesDir: 'x-y', criesDir: 'latest' },
+  7: { enabled: false, spritesDir: 'sun-moon', criesDir: 'latest' },
+  8: { enabled: false, spritesDir: 'sword-shield', criesDir: 'latest' },
+  9: { enabled: false, spritesDir: 'scarlet-violet', criesDir: 'latest' },
+};
+
+const baseDefs = generations.flatMap((generation) =>
+  pokemon[generationKeys[generation]].map((def) => ({ def, generation })),
+);
+
+// Build form-only pools: a later-generation form is shown only when its
+// introduction generation is enabled. Its base cry still comes from the
+// species generation, while its sprite comes from the form generation.
+const formOnlyPools = new Map<Generation, Map<string, PokemonDef>>();
+for (const { def, generation } of baseDefs) {
+  const formsByGeneration = new Map<Generation, string[]>();
+  for (const rawForm of def.forms ?? []) {
+    if (rawForm.startsWith('!')) {
+      continue;
+    }
+
+    const name = rawForm.replace(/^@/, '');
+    const formGeneration = def.formGenerations?.[name] as Generation | undefined;
+    if (!formGeneration || formGeneration === generation) {
+      continue;
+    }
+
+    const list = formsByGeneration.get(formGeneration) ?? [];
+    list.push(rawForm);
+    formsByGeneration.set(formGeneration, list);
+  }
+
+  for (const [formGeneration, forms] of formsByGeneration) {
+    let pool = formOnlyPools.get(formGeneration);
+    if (!pool) {
+      pool = new Map();
+      formOnlyPools.set(formGeneration, pool);
+    }
+
+    pool.set(def.species_id, {
+      ...def,
+      forms,
+      baseForm: false,
+      baseCryDir: generationConfigs[generation].criesDir,
+    });
+  }
+}
+
+const nativeDefForGeneration = (def: PokemonDef, generation: Generation): PokemonDef => {
+  const originalForms = def.forms ?? [];
+  const forms = originalForms.filter((rawForm) => {
+    if (rawForm.startsWith('!')) {
+      return true;
+    }
+    const name = rawForm.replace(/^@/, '');
+    const formGeneration = def.formGenerations?.[name];
+    return !formGeneration || formGeneration === generation;
+  });
+
+  if (forms.length === originalForms.length) {
+    return def;
+  }
+  if (forms.length > 0) {
+    return { ...def, forms };
+  }
+
+  const rest = { ...def };
+  delete rest.forms;
+  delete rest.formGenerations;
+  delete rest.formSounds;
+  delete rest.formSprites;
+  return rest;
+};
+
 // For every generation, keep a copy of all pokemon and the pokemon
 // that are left to be guessed from that generation.
-const gens: Record<Generation, GenData> = {
-  1: createGeneration(pokemon.gen1, { enabled: true, spritesDir: 'yellow', criesDir: 'legacy' }),
-  2: createGeneration(pokemon.gen2, { enabled: false, spritesDir: 'crystal', criesDir: 'legacy' }),
-  3: createGeneration(pokemon.gen3, { enabled: false, spritesDir: 'emerald', criesDir: 'legacy' }),
-  4: createGeneration(pokemon.gen4, {
-    enabled: false,
-    spritesDir: 'platinum',
-    criesDir: 'legacy',
-  }),
-  5: createGeneration(pokemon.gen5, {
-    enabled: false,
-    spritesDir: 'black-white',
-    criesDir: 'legacy',
-  }),
-  6: createGeneration(pokemon.gen6, { enabled: false, spritesDir: 'x-y', criesDir: 'latest' }),
-  7: createGeneration(pokemon.gen7, {
-    enabled: false,
-    spritesDir: 'sun-moon',
-    criesDir: 'latest',
-  }),
-  8: createGeneration(pokemon.gen8, {
-    enabled: false,
-    spritesDir: 'sword-shield',
-    criesDir: 'latest',
-  }),
-  9: createGeneration(pokemon.gen9, {
-    enabled: false,
-    spritesDir: 'scarlet-violet',
-    criesDir: 'latest',
-  }),
-};
+const gens = Object.fromEntries(
+  generations.map((generation) => [
+    generation,
+    createGeneration(
+      [
+        ...pokemon[generationKeys[generation]].map((def) =>
+          nativeDefForGeneration(def, generation),
+        ),
+        ...(formOnlyPools.get(generation)?.values() ?? []),
+      ],
+      generationConfigs[generation],
+    ),
+  ]),
+) as Record<Generation, GenData>;
 
 // Gets a list of lists of pokemon from all enabled generations.
 const getPokemon = (key: 'pokemon' | 'pokemonLeft'): PokemonEntry[][] => {
@@ -484,6 +563,7 @@ const testWindow = window as unknown as {
     nextRound: () => void;
     resolvePokemon: (entry: PokemonEntry) => Pokemon;
     setPokemonLeft: (lists: PokemonEntry[][]) => void;
+    getGeneration: (generation: Generation) => PokemonDef[];
   };
 };
 
@@ -494,6 +574,7 @@ if (testWindow.__POKECRY_TEST__) {
     setPokemonLeft: (lists) => {
       pokemonLeft = lists;
     },
+    getGeneration: (generation) => gens[generation].pokemon.map((entry) => entry.def),
   };
 }
 

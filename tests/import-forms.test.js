@@ -31,7 +31,13 @@ describe('import form planning', () => {
 
     expect(result.defaultVariant).toBe(variant);
     expect(result.defaultSuffix).toBe('vanilla-cream-strawberry-sweet');
-    expect(result.forms).toEqual([{ variant, name: 'ruby-cream-strawberry-sweet' }]);
+    expect(result.forms).toEqual([
+      {
+        variant,
+        name: 'ruby-cream-strawberry-sweet',
+        form: { form_identifier: 'ruby-cream-strawberry-sweet', is_default: '0' },
+      },
+    ]);
     expect(result.skipped).toEqual([]);
   });
 
