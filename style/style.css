@@ -77,6 +77,10 @@ button {
   display: none;
 }
 
+.invisible {
+  visibility: hidden;
+}
+
 .results {
   position: relative;
   height: 80px;
@@ -280,17 +284,41 @@ button {
   left: 50px;
   bottom: 0;
   width: calc(100% - 200px);
-  /* Room above the first row so its tooltip isn't clipped by overflow. */
-  padding: 3em 1em 1em;
+  /* Room above and to the sides so tooltips aren't clipped by overflow. */
+  padding: 3em 5rem 1em;
   overflow-y: auto;
+}
+
+.end-pokemon[data-tooltip]::before {
+  max-width: 160px;
+  white-space: normal;
+}
+
+.end-summary {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  margin: 0 0 1em;
+  padding: 0.25em 0;
+  background: var(--paper);
+  color: var(--muted-strong);
 }
 
 .end-pokemon {
   display: inline-block;
-  padding: 0;
-  border: 0;
+  padding: 2px;
+  border: 2px solid transparent;
+  border-radius: 8px;
   background: transparent;
   cursor: pointer;
+}
+
+.end-pokemon.correct {
+  border-color: var(--success);
+}
+
+.end-pokemon.wrong {
+  border-color: var(--failure);
 }
 
 .sr-only {

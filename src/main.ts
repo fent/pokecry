@@ -1,5 +1,5 @@
 const REVEAL_TIMEOUT = 1200;
-const PING_TIMEOUT = 600;
+const END_REVEAL_TIMEOUT = 50;
 const VOLUME = 0.5;
 
 type Generation = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
@@ -224,7 +224,7 @@ let roundActive = false;
 let revealTimer: number | undefined;
 let showingEmptyState = false;
 const endScreenTimers: number[] = [];
-const guessedWrong: Pokemon[] = [];
+const guessedPokemon: { pokemon: Pokemon; correct: boolean }[] = [];
 
 const requireElement = <T extends Element>(selector: string): T => {
   const element = document.querySelector<T>(selector);
@@ -238,6 +238,7 @@ const optionsElement = requireElement<HTMLDivElement>('.options');
 const optionElements = document.querySelectorAll<HTMLButtonElement>('.option');
 const genElements = document.querySelectorAll<HTMLButtonElement>('.gen[data-gen]');
 const allGensElement = requireElement<HTMLButtonElement>('.gen-all');
+const resultsElement = requireElement<HTMLDivElement>('.results');
 const successElement = requireElement<HTMLHeadingElement>('.success');
 const failureElement = requireElement<HTMLHeadingElement>('.failure');
 const fillerElement = requireElement<HTMLHeadingElement>('.filler');
@@ -267,9 +268,15 @@ const setHidden = (element: Element, hidden: boolean): void => {
   element.classList.toggle('hidden', hidden);
 };
 
+const setInvisible = (element: Element, invisible: boolean): void => {
+  element.classList.toggle('invisible', invisible);
+};
+
 const setRumble = (element: Element, active: boolean): void => {
   element.classList.toggle('rumble', active);
 };
+
+const ignorePlayError = (): void => undefined;
 
 const clearEndScreenTimers = (): void => {
   for (const timer of endScreenTimers) {
@@ -339,9 +346,8 @@ const guess = (option: HTMLButtonElement): void => {
   restorePlayFocus = document.activeElement === option;
   if (isCorrect) {
     correctGuesses++;
-  } else {
-    guessedWrong.push(thePokemon);
   }
+  guessedPokemon.push({ pokemon: thePokemon, correct: isCorrect });
 
   const scoreText = `${correctGuesses} / ${totalGuesses}`;
   const resultElement = isCorrect ? successElement : failureElement;
@@ -394,6 +400,7 @@ const nextRound = (): void => {
   }
   setHidden(fillerElement, true);
   setHidden(optionsElement, false);
+  setInvisible(resultsElement, false);
   setHidden(endScreenElement, true);
   clearEndScreenTimers();
   endScreenElement.replaceChildren();
@@ -440,24 +447,29 @@ const displayEndScreen = (): void => {
   }
   roundActive = false;
   updateRemaining();
+  setInvisible(resultsElement, true);
   setHidden(endGameElement, true);
   clearEndScreenTimers();
   endScreenElement.replaceChildren();
   setHidden(endScreenElement, false);
   endScreenElement.tabIndex = -1;
   endScreenElement.focus({ preventScroll: true });
-  const ping = new Audio('media/ping.mp3');
-  ping.volume = VOLUME;
 
-  for (let i = 0, len = guessedWrong.length; i < len; i++) {
-    const pokemon = guessedWrong[i];
+  const summary = document.createElement('p');
+  summary.className = 'end-summary';
+  summary.textContent = `${correctGuesses} correct / ${totalGuesses - correctGuesses} wrong`;
+  endScreenElement.appendChild(summary);
+
+  for (let i = 0, len = guessedPokemon.length; i < len; i++) {
+    const { pokemon, correct } = guessedPokemon[i];
+    const result = correct ? 'correct' : 'wrong';
     const cry = new Audio(pokemon.cry);
     cry.volume = VOLUME;
     const wrapper = document.createElement('button');
     wrapper.type = 'button';
-    wrapper.className = 'end-pokemon';
-    wrapper.dataset.tooltip = displayName(pokemon);
-    wrapper.setAttribute('aria-label', `Play ${displayName(pokemon)}'s cry`);
+    wrapper.className = `end-pokemon ${result}`;
+    wrapper.dataset.tooltip = `${displayName(pokemon)} (${result})`;
+    wrapper.setAttribute('aria-label', `Play ${displayName(pokemon)}'s cry, ${result}`);
     const image = document.createElement('img');
     image.className = 'pokemon-sprite';
     image.setAttribute('src', pokemon.sprite);
@@ -466,15 +478,12 @@ const displayEndScreen = (): void => {
     cry.addEventListener('ended', () => setRumble(image, false));
     wrapper.addEventListener('click', () => {
       cry.currentTime = 0;
-      void cry.play().catch(() => undefined);
+      void cry.play().catch(ignorePlayError);
     });
     wrapper.appendChild(image);
     const timer = window.setTimeout(
-      () => {
-        ping.play();
-        endScreenElement.appendChild(wrapper);
-      },
-      (i + 1) * PING_TIMEOUT,
+      () => endScreenElement.appendChild(wrapper),
+      (i + 1) * END_REVEAL_TIMEOUT,
     );
     endScreenTimers.push(timer);
   }
@@ -486,6 +495,7 @@ const showEmptyState = (): void => {
   roundActive = false;
   updateRemaining();
   showingEmptyState = true;
+  setInvisible(resultsElement, false);
   setHidden(playElement, false);
   playElement.disabled = true;
   setHidden(optionsElement, false);
