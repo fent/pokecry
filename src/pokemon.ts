@@ -729,7 +729,11 @@ pokemon.gen2 = [
   },
   {
     "species_id": "172",
-    "identifier": "pichu"
+    "identifier": "pichu",
+    "forms": [
+      "spiky-eared"
+    ],
+    "formSounds": false
   },
   {
     "species_id": "173",
@@ -847,9 +851,34 @@ pokemon.gen2 = [
     "species_id": "201",
     "identifier": "unown",
     "forms": [
-      "!a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k",
-      "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v",
-      "w", "x", "y", "z"
+      "!a",
+      "b",
+      "c",
+      "d",
+      "e",
+      "f",
+      "g",
+      "h",
+      "i",
+      "j",
+      "k",
+      "l",
+      "m",
+      "n",
+      "o",
+      "p",
+      "q",
+      "r",
+      "s",
+      "t",
+      "u",
+      "v",
+      "w",
+      "x",
+      "y",
+      "z",
+      "exclamation",
+      "question"
     ],
     "formSounds": false
   },
@@ -2046,9 +2075,25 @@ pokemon.gen4 = [
     "species_id": "493",
     "identifier": "arceus",
     "forms": [
-      "bug", "dark", "dragon", "electric", "fighting", "fire",
-      "flying", "ghost", "grass", "ground", "ice", "normal", "ice",
-      "normal", "poison", "psychic", "rock", "steel", "unknown", "water"
+      "!normal",
+      "bug",
+      "dark",
+      "dragon",
+      "electric",
+      "fighting",
+      "fire",
+      "flying",
+      "ghost",
+      "grass",
+      "ground",
+      "ice",
+      "poison",
+      "psychic",
+      "rock",
+      "steel",
+      "water",
+      "unknown",
+      "fairy"
     ],
     "formSounds": false
   }
@@ -2456,11 +2501,21 @@ pokemon.gen5 = [
   },
   {
     "species_id": "592",
-    "identifier": "frillish"
+    "identifier": "frillish",
+    "forms": [
+      "!male",
+      "female"
+    ],
+    "formSounds": false
   },
   {
     "species_id": "593",
-    "identifier": "jellicent"
+    "identifier": "jellicent",
+    "forms": [
+      "!male",
+      "female"
+    ],
+    "formSounds": false
   },
   {
     "species_id": "594",
@@ -2782,7 +2837,12 @@ pokemon.gen6 = [
   },
   {
     "species_id": "668",
-    "identifier": "pyroar"
+    "identifier": "pyroar",
+    "forms": [
+      "!male",
+      "female"
+    ],
+    "formSounds": false
   },
   {
     "species_id": "669",
@@ -3235,10 +3295,26 @@ pokemon.gen7 = [
     "species_id": "773",
     "identifier": "silvally",
     "forms": [
-      "bug", "dark", "dragon", "electric", "fairy", "fighting", "fire",
-      "flying", "ghost", "grass", "ground", "ice", "normal", "ice",
-      "normal", "poison", "psychic", "rock", "steel", "water"
-    ]
+      "!normal",
+      "fighting",
+      "flying",
+      "poison",
+      "ground",
+      "rock",
+      "bug",
+      "ghost",
+      "steel",
+      "fire",
+      "water",
+      "grass",
+      "electric",
+      "psychic",
+      "ice",
+      "dragon",
+      "dark",
+      "fairy"
+    ],
+    "formSounds": false
   },
   {
     "species_id": "774",
@@ -3246,7 +3322,7 @@ pokemon.gen7 = [
     "forms": [
       "blue", "green", "indigo", "orange", "red", "violet", "yellow",
       "blue-meteor", "green-meteor", "indigo-meteor", "orange-meteor",
-      "red-meteor", "violet-meteor", "yellow-meteor",
+      "red-meteor", "violet-meteor", "yellow-meteor"
     ]
   },
   {
@@ -3589,11 +3665,21 @@ pokemon.gen8 = [
   },
   {
     "species_id": "854",
-    "identifier": "sinistea"
+    "identifier": "sinistea",
+    "forms": [
+      "!phony",
+      "antique"
+    ],
+    "formSounds": false
   },
   {
     "species_id": "855",
-    "identifier": "polteageist"
+    "identifier": "polteageist",
+    "forms": [
+      "!phony",
+      "antique"
+    ],
+    "formSounds": false
   },
   {
     "species_id": "856",
@@ -3649,7 +3735,73 @@ pokemon.gen8 = [
   },
   {
     "species_id": "869",
-    "identifier": "alcremie"
+    "identifier": "alcremie",
+    "forms": [
+      "!vanilla-cream-strawberry-sweet",
+      "ruby-cream-strawberry-sweet",
+      "matcha-cream-strawberry-sweet",
+      "mint-cream-strawberry-sweet",
+      "lemon-cream-strawberry-sweet",
+      "salted-cream-strawberry-sweet",
+      "ruby-swirl-strawberry-sweet",
+      "caramel-swirl-strawberry-sweet",
+      "rainbow-swirl-strawberry-sweet",
+      "vanilla-cream-berry-sweet",
+      "ruby-cream-berry-sweet",
+      "matcha-cream-berry-sweet",
+      "mint-cream-berry-sweet",
+      "lemon-cream-berry-sweet",
+      "salted-cream-berry-sweet",
+      "ruby-swirl-berry-sweet",
+      "caramel-swirl-berry-sweet",
+      "rainbow-swirl-berry-sweet",
+      "vanilla-cream-love-sweet",
+      "ruby-cream-love-sweet",
+      "matcha-cream-love-sweet",
+      "mint-cream-love-sweet",
+      "lemon-cream-love-sweet",
+      "salted-cream-love-sweet",
+      "ruby-swirl-love-sweet",
+      "caramel-swirl-love-sweet",
+      "rainbow-swirl-love-sweet",
+      "vanilla-cream-star-sweet",
+      "ruby-cream-star-sweet",
+      "matcha-cream-star-sweet",
+      "mint-cream-star-sweet",
+      "lemon-cream-star-sweet",
+      "salted-cream-star-sweet",
+      "ruby-swirl-star-sweet",
+      "caramel-swirl-star-sweet",
+      "rainbow-swirl-star-sweet",
+      "vanilla-cream-clover-sweet",
+      "ruby-cream-clover-sweet",
+      "matcha-cream-clover-sweet",
+      "mint-cream-clover-sweet",
+      "lemon-cream-clover-sweet",
+      "salted-cream-clover-sweet",
+      "ruby-swirl-clover-sweet",
+      "caramel-swirl-clover-sweet",
+      "rainbow-swirl-clover-sweet",
+      "vanilla-cream-flower-sweet",
+      "ruby-cream-flower-sweet",
+      "matcha-cream-flower-sweet",
+      "mint-cream-flower-sweet",
+      "lemon-cream-flower-sweet",
+      "salted-cream-flower-sweet",
+      "ruby-swirl-flower-sweet",
+      "caramel-swirl-flower-sweet",
+      "rainbow-swirl-flower-sweet",
+      "vanilla-cream-ribbon-sweet",
+      "ruby-cream-ribbon-sweet",
+      "matcha-cream-ribbon-sweet",
+      "mint-cream-ribbon-sweet",
+      "lemon-cream-ribbon-sweet",
+      "salted-cream-ribbon-sweet",
+      "ruby-swirl-ribbon-sweet",
+      "caramel-swirl-ribbon-sweet",
+      "rainbow-swirl-ribbon-sweet"
+    ],
+    "formSounds": false
   },
   {
     "species_id": "870",
@@ -4297,11 +4449,23 @@ pokemon.gen9 = [
   },
   {
     "species_id": "1007",
-    "identifier": "koraidon"
+    "identifier": "koraidon",
+    "forms": [
+      "!apex-build",
+      "sprinting-build",
+      "gliding-build"
+    ],
+    "formSounds": true
   },
   {
     "species_id": "1008",
-    "identifier": "miraidon"
+    "identifier": "miraidon",
+    "forms": [
+      "!ultimate-mode",
+      "drive-mode",
+      "glide-mode"
+    ],
+    "formSounds": true
   },
   {
     "species_id": "1009",
@@ -4317,11 +4481,21 @@ pokemon.gen9 = [
   },
   {
     "species_id": "1012",
-    "identifier": "poltchageist"
+    "identifier": "poltchageist",
+    "forms": [
+      "!counterfeit",
+      "artisan"
+    ],
+    "formSounds": false
   },
   {
     "species_id": "1013",
-    "identifier": "sinistcha"
+    "identifier": "sinistcha",
+    "forms": [
+      "!unremarkable",
+      "masterpiece"
+    ],
+    "formSounds": false
   },
   {
     "species_id": "1014",

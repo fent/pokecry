@@ -21,13 +21,59 @@ const SPRITES_SHA = '1b3b7c0a538dd2226ae08d0d2f8955125075bbd4';
 const CRIES_SHA = 'b3a9044bb839b5e3152aaa536c7b463a0fcf0140';
 
 const GENERATIONS = {
-  7: { spritesDir: 'sun-moon', dataKey: 'gen7' },
-  8: { spritesDir: 'sword-shield', dataKey: 'gen8' },
-  9: { spritesDir: 'scarlet-violet', dataKey: 'gen9' },
+  1: {
+    spritesDir: 'yellow',
+    criesDir: 'legacy',
+    dataKey: 'gen1',
+    versionDir: 'generation-i/yellow',
+  },
+  2: {
+    spritesDir: 'crystal',
+    criesDir: 'legacy',
+    dataKey: 'gen2',
+    versionDir: 'generation-ii/crystal',
+  },
+  3: {
+    spritesDir: 'emerald',
+    criesDir: 'legacy',
+    dataKey: 'gen3',
+    versionDir: 'generation-iii/emerald',
+  },
+  4: {
+    spritesDir: 'platinum',
+    criesDir: 'legacy',
+    dataKey: 'gen4',
+    versionDir: 'generation-iv/platinum',
+  },
+  5: {
+    spritesDir: 'black-white',
+    criesDir: 'legacy',
+    dataKey: 'gen5',
+    versionDir: 'generation-v/black-white',
+  },
+  6: { spritesDir: 'x-y', criesDir: 'latest', dataKey: 'gen6', versionDir: 'generation-vi/x-y' },
+  7: {
+    spritesDir: 'sun-moon',
+    criesDir: 'latest',
+    dataKey: 'gen7',
+    versionDir: 'generation-vii/sun-moon',
+  },
+  8: {
+    spritesDir: 'sword-shield',
+    criesDir: 'latest',
+    dataKey: 'gen8',
+    versionDir: 'generation-viii/sword-shield',
+  },
+  9: {
+    spritesDir: 'scarlet-violet',
+    criesDir: 'latest',
+    dataKey: 'gen9',
+    versionDir: 'generation-ix/scarlet-violet',
+  },
 };
 
 const USAGE = `Usage:
-  node scripts/import-pokemon.mjs --gen <7|8|9> --ids <id|start-end>[, ...] [--force]
+  node scripts/import-pokemon.mjs --gen <1-9> --ids <id|start-end>[, ...] [--force]
   node scripts/import-pokemon.mjs --normalize-audio
 
 Options:
@@ -96,6 +142,43 @@ const downloadOptional = async (url, path, force) => {
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(path, Buffer.from(await response.arrayBuffer()));
   return path;
+};
+
+const pngSize = (path) => {
+  const header = readFileSync(path).subarray(0, 24);
+  if (header.toString('ascii', 1, 4) !== 'PNG') {
+    throw new Error(`Not a PNG: ${path}`);
+  }
+
+  return { width: header.readUInt32BE(16), height: header.readUInt32BE(20) };
+};
+
+const writeSprite = (source, target, resize) => {
+  mkdirSync(dirname(target), { recursive: true });
+
+  if (!resize) {
+    cpSync(source, target);
+    return;
+  }
+
+  const { width, height, filter } = resize;
+  execFileSync(
+    FFMPEG,
+    [
+      '-y',
+      '-loglevel',
+      'error',
+      '-i',
+      source,
+      '-vf',
+      `scale=${width}:${height}:force_original_aspect_ratio=decrease:flags=${filter},` +
+        `pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2:color=#00000000`,
+      '-pix_fmt',
+      'rgba',
+      target,
+    ],
+    { stdio: 'inherit' },
+  );
 };
 
 const parseCsv = (text) => {
@@ -175,9 +258,11 @@ const normalizeAudio = () => {
 
   for (const wav of wavs) {
     const mp3 = wav.replace(/\.wav$/i, '.mp3');
-    execFileSync(FFMPEG, ['-y', '-loglevel', 'error', '-i', wav, '-ac', '1', '-b:a', '96k', mp3], {
-      stdio: 'inherit',
-    });
+    execFileSync(
+      FFMPEG,
+      ['-y', '-loglevel', 'error', '-i', wav, '-vn', '-ac', '1', '-b:a', '96k', mp3],
+      { stdio: 'inherit' },
+    );
     rmSync(wav);
   }
 
@@ -192,9 +277,56 @@ const formSuffix = (speciesIdentifier, pokemon, form) => {
 const isExcludedForm = (pokemon, form) =>
   form?.is_mega === '1' || form?.form_identifier === 'gmax' || pokemon.identifier.endsWith('-gmax');
 
+const entryText = (entry) => JSON.stringify(entry, null, 2).replace(/\n/g, '\n  ');
+
+const topLevelObjectRanges = (arrayText) => {
+  const ranges = [];
+  let depth = 0;
+  let start = -1;
+  let quoted = false;
+  let escaped = false;
+
+  for (let index = 0; index < arrayText.length; index += 1) {
+    const character = arrayText[index];
+
+    if (quoted) {
+      if (escaped) {
+        escaped = false;
+      } else if (character === '\\') {
+        escaped = true;
+      } else if (character === '"') {
+        quoted = false;
+      }
+      continue;
+    }
+
+    if (character === '"') {
+      quoted = true;
+    } else if (character === '{') {
+      if (depth === 0) {
+        start = index;
+      }
+      depth += 1;
+    } else if (character === '}') {
+      depth -= 1;
+      if (depth === 0 && start !== -1) {
+        ranges.push({ start, end: index + 1 });
+        start = -1;
+      }
+    }
+  }
+
+  return ranges;
+};
+
+const rewriteArray = (entries) => {
+  const body = entries.map((entry) => '  ' + entryText(entry)).join(',\n');
+  return '[\n' + body + (body ? ',\n' : '') + ']';
+};
+
 const updateData = (dataKey, entries) => {
   const dataPath = join(ROOT, 'src/pokemon.ts');
-  let data = readFileSync(dataPath, 'utf8');
+  const data = readFileSync(dataPath, 'utf8');
 
   const start = data.indexOf(`pokemon.${dataKey} = [`);
   const arrayStart = start === -1 ? -1 : data.indexOf('[', start);
@@ -203,32 +335,53 @@ const updateData = (dataKey, entries) => {
     throw new Error(`Could not find pokemon.${dataKey} in src/pokemon.ts`);
   }
 
-  const arrayText = data.slice(arrayStart, close + 2).replace(/,\s*]$/, ']');
+  const arrayText = data.slice(arrayStart, close + 2);
   let existing;
   try {
-    existing = JSON.parse(arrayText);
+    existing = JSON.parse(arrayText.replace(/,\s*]$/, ']'));
   } catch (error) {
     throw new Error(`Could not parse pokemon.${dataKey}: ${error.message}`, { cause: error });
   }
 
-  const byId = new Map(existing.map((entry) => [entry.species_id, entry]));
-  let added = 0;
-  for (const entry of entries) {
-    if (!byId.has(entry.species_id)) {
-      added += 1;
-    }
-    byId.set(entry.species_id, entry);
+  const ranges = topLevelObjectRanges(arrayText);
+  const rangeById = new Map();
+  for (const range of ranges) {
+    const entry = JSON.parse(arrayText.slice(range.start, range.end));
+    rangeById.set(entry.species_id, range);
   }
 
-  const merged = [...byId.values()].sort(
-    (left, right) => Number(left.species_id) - Number(right.species_id),
-  );
-  const body = merged
-    .map((entry) => '  ' + JSON.stringify(entry, null, 2).replace(/\n/g, '\n  '))
-    .join(',\n');
+  const existingById = new Map(existing.map((entry) => [entry.species_id, entry]));
+  let added = 0;
+  const replacements = [];
+  for (const entry of entries) {
+    const range = rangeById.get(entry.species_id);
+    existingById.set(entry.species_id, entry);
+    if (range) {
+      replacements.push({ ...range, text: entryText(entry) });
+    } else {
+      added += 1;
+    }
+  }
 
-  data = data.slice(0, arrayStart + 1) + '\n' + body + (body ? ',\n' : '') + data.slice(close + 1);
-  writeFileSync(dataPath, data);
+  let newArrayText;
+  if (added > 0) {
+    // New species need the array rebuilt; existing entries keep the same formatting
+    // when only existing species are updated.
+    const merged = [...existingById.values()].sort(
+      (left, right) => Number(left.species_id) - Number(right.species_id),
+    );
+    newArrayText = rewriteArray(merged);
+  } else {
+    newArrayText = arrayText;
+    for (const replacement of replacements.sort((left, right) => right.start - left.start)) {
+      newArrayText =
+        newArrayText.slice(0, replacement.start) +
+        replacement.text +
+        newArrayText.slice(replacement.end);
+    }
+  }
+
+  writeFileSync(dataPath, data.slice(0, arrayStart) + newArrayText + data.slice(close + 2));
   return added;
 };
 
@@ -250,7 +403,12 @@ const importPokemon = async (generation, ids, force) => {
     list.push(row);
     pokemonBySpecies.set(row.species_id, list);
   }
-  const formByPokemon = new Map(formRows.map((row) => [row.pokemon_id, row]));
+  const formsByPokemon = new Map();
+  for (const row of formRows) {
+    const list = formsByPokemon.get(row.pokemon_id) ?? [];
+    list.push(row);
+    formsByPokemon.set(row.pokemon_id, list);
+  }
 
   const entries = [];
   const skipped = [];
@@ -269,93 +427,185 @@ const importPokemon = async (generation, ids, force) => {
       throw new Error(`No Pokemon data found for species ${id}`);
     }
 
-    const defaultSuffix = formSuffix(
-      identifier,
-      defaultVariant,
-      formByPokemon.get(defaultVariant.id),
-    );
+    const defaultForms = formsByPokemon.get(defaultVariant.id) ?? [];
+    const defaultForm =
+      defaultForms.find((form) => form.is_default === '1') ?? defaultForms[0] ?? null;
+    const defaultSuffix = formSuffix(identifier, defaultVariant, defaultForm);
 
-    const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/${SPRITES_SHA}/sprites/pokemon/${id}.png`;
-    const cryUrl = `https://raw.githubusercontent.com/PokeAPI/cries/${CRIES_SHA}/cries/pokemon/latest/${id}.ogg`;
-    const spriteSource = join(CACHE, `sprites-${SPRITES_SHA}`, `${id}.png`);
-    const crySource = join(CACHE, `cries-${CRIES_SHA}`, `${id}.ogg`);
-
-    await download(spriteUrl, spriteSource, force);
-    await download(cryUrl, crySource, force);
-
+    // Keep existing generation-specific base assets; only download a base
+    // sprite/cry when the target is missing.
     const spriteTarget = join(ROOT, 'media/sprites', config.spritesDir, `${id}.png`);
-    const cryTarget = join(ROOT, 'media/cries', 'latest', `${id}.mp3`);
-    mkdirSync(dirname(spriteTarget), { recursive: true });
-    mkdirSync(dirname(cryTarget), { recursive: true });
-
-    cpSync(spriteSource, spriteTarget);
-    execFileSync(
-      FFMPEG,
-      ['-y', '-loglevel', 'error', '-i', crySource, '-ac', '1', '-b:a', '96k', cryTarget],
-      { stdio: 'inherit' },
-    );
-
-    const forms = [];
-    const seenForms = new Set();
-    let formSounds = false;
-
-    for (const variant of variants) {
-      if (variant.id === defaultVariant.id) {
-        continue;
-      }
-
-      const form = formByPokemon.get(variant.id);
-      if (isExcludedForm(variant, form)) {
-        continue;
-      }
-
-      const suffix = formSuffix(identifier, variant, form);
-      if (!suffix) {
-        skipped.push(`${id} ${variant.identifier}: no form name`);
-        continue;
-      }
-
-      const name = suffix;
-      if (seenForms.has(name)) {
-        continue;
-      }
-
-      const formSpriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/${SPRITES_SHA}/sprites/pokemon/${variant.id}.png`;
-      const formCryUrl = `https://raw.githubusercontent.com/PokeAPI/cries/${CRIES_SHA}/cries/pokemon/latest/${variant.id}.ogg`;
-      const formSpriteSource = join(CACHE, `sprites-${SPRITES_SHA}`, `${variant.id}.png`);
-      const formCrySource = join(CACHE, `cries-${CRIES_SHA}`, `${variant.id}.ogg`);
-
-      const [formSprite, formCry] = await Promise.all([
-        downloadOptional(formSpriteUrl, formSpriteSource, force),
-        downloadOptional(formCryUrl, formCrySource, force),
-      ]);
-      if (!formSprite || !formCry) {
-        skipped.push(`${id} ${variant.identifier}: missing sprite or cry`);
-        continue;
-      }
-
-      const formSpriteTarget = join(ROOT, 'media/sprites', config.spritesDir, `${id}-${name}.png`);
-      const formCryTarget = join(ROOT, 'media/cries', 'latest', `${id}-${name}.mp3`);
-      mkdirSync(dirname(formSpriteTarget), { recursive: true });
-      mkdirSync(dirname(formCryTarget), { recursive: true });
-
-      cpSync(formSprite, formSpriteTarget);
+    const cryTarget = join(ROOT, 'media/cries', config.criesDir, `${id}.mp3`);
+    if (force || !existsSync(spriteTarget)) {
+      const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/${SPRITES_SHA}/sprites/pokemon/${id}.png`;
+      const spriteSource = join(CACHE, `sprites-${SPRITES_SHA}`, `${id}.png`);
+      await download(spriteUrl, spriteSource, force);
+      writeSprite(spriteSource, spriteTarget, null);
+    }
+    if (force || !existsSync(cryTarget)) {
+      const cryUrl = `https://raw.githubusercontent.com/PokeAPI/cries/${CRIES_SHA}/cries/pokemon/latest/${id}.ogg`;
+      const crySource = join(CACHE, `cries-${CRIES_SHA}`, `${id}.ogg`);
+      await download(cryUrl, crySource, force);
+      mkdirSync(dirname(cryTarget), { recursive: true });
       execFileSync(
         FFMPEG,
-        ['-y', '-loglevel', 'error', '-i', formCry, '-ac', '1', '-b:a', '96k', formCryTarget],
+        ['-y', '-loglevel', 'error', '-i', crySource, '-vn', '-ac', '1', '-b:a', '96k', cryTarget],
         { stdio: 'inherit' },
       );
-
-      seenForms.add(name);
-      forms.push(name);
-      formSounds = true;
     }
 
+    const baseSize = pngSize(spriteTarget);
+    const forms = [];
+    const seenForms = new Set();
+
+    for (const variant of variants) {
+      const variantForms = formsByPokemon.get(variant.id) ?? [];
+      const candidates =
+        variantForms.length > 0
+          ? variantForms
+          : [
+              {
+                form_identifier: formSuffix(identifier, variant, null),
+                is_default: variant.id === defaultVariant.id ? '1' : '0',
+              },
+            ];
+
+      for (const form of candidates) {
+        if (variant.id === defaultVariant.id && form.is_default === '1') {
+          continue;
+        }
+        if (isExcludedForm(variant, form)) {
+          continue;
+        }
+
+        const suffix = formSuffix(identifier, variant, form);
+        if (!suffix) {
+          skipped.push(`${id} ${variant.identifier}: no form name`);
+          continue;
+        }
+
+        const name = suffix;
+        if (seenForms.has(name)) {
+          continue;
+        }
+
+        const formSpriteTarget = join(
+          ROOT,
+          'media/sprites',
+          config.spritesDir,
+          `${id}-${name}.png`,
+        );
+
+        let spriteKind = null;
+        let spriteSource = null;
+        if (force || !existsSync(formSpriteTarget)) {
+          const spriteCandidates = [];
+          if (variant.id !== defaultVariant.id) {
+            spriteCandidates.push({
+              kind: 'standard',
+              url: `https://raw.githubusercontent.com/PokeAPI/sprites/${SPRITES_SHA}/sprites/pokemon/${variant.id}.png`,
+              cache: join(CACHE, `sprites-${SPRITES_SHA}`, `${variant.id}.png`),
+            });
+          }
+          spriteCandidates.push({
+            kind: 'versioned',
+            url:
+              `https://raw.githubusercontent.com/PokeAPI/sprites/${SPRITES_SHA}/sprites/pokemon/` +
+              `versions/${config.versionDir}/${variant.id}-${name}.png`,
+            cache: join(
+              CACHE,
+              `sprites-${SPRITES_SHA}`,
+              `versioned-${config.versionDir.replace(/\//g, '-')}-${variant.id}-${name}.png`,
+            ),
+          });
+          spriteCandidates.push({
+            kind: 'standard',
+            url: `https://raw.githubusercontent.com/PokeAPI/sprites/${SPRITES_SHA}/sprites/pokemon/${variant.id}-${name}.png`,
+            cache: join(CACHE, `sprites-${SPRITES_SHA}`, `form-${variant.id}-${name}.png`),
+          });
+          spriteCandidates.push({
+            kind: 'artwork',
+            url:
+              `https://raw.githubusercontent.com/PokeAPI/sprites/${SPRITES_SHA}/sprites/pokemon/` +
+              `other/official-artwork/${variant.id}-${name}.png`,
+            cache: join(CACHE, `sprites-${SPRITES_SHA}`, `artwork-${variant.id}-${name}.png`),
+          });
+
+          for (const candidate of spriteCandidates) {
+            const downloaded = await downloadOptional(candidate.url, candidate.cache, force);
+            if (downloaded) {
+              spriteKind = candidate.kind;
+              spriteSource = downloaded;
+              break;
+            }
+          }
+        }
+
+        if (!spriteSource && !existsSync(formSpriteTarget)) {
+          skipped.push(`${id} ${variant.identifier}: missing sprite`);
+          continue;
+        }
+
+        if (spriteSource) {
+          const resize =
+            spriteKind === 'artwork' || (spriteKind === 'standard' && generation <= 4)
+              ? {
+                  width: baseSize.width,
+                  height: baseSize.height,
+                  filter: spriteKind === 'artwork' ? 'lanczos' : 'neighbor',
+                }
+              : null;
+          writeSprite(spriteSource, formSpriteTarget, resize);
+        }
+
+        let hasFormCry = false;
+        const formCryTarget = join(ROOT, 'media/cries', config.criesDir, `${id}-${name}.mp3`);
+        if (force || !existsSync(formCryTarget)) {
+          if (variant.id !== defaultVariant.id) {
+            const formCryUrl = `https://raw.githubusercontent.com/PokeAPI/cries/${CRIES_SHA}/cries/pokemon/latest/${variant.id}.ogg`;
+            const formCrySource = join(CACHE, `cries-${CRIES_SHA}`, `${variant.id}.ogg`);
+            const formCry = await downloadOptional(formCryUrl, formCrySource, force);
+            if (formCry) {
+              mkdirSync(dirname(formCryTarget), { recursive: true });
+              execFileSync(
+                FFMPEG,
+                [
+                  '-y',
+                  '-loglevel',
+                  'error',
+                  '-i',
+                  formCry,
+                  '-vn',
+                  '-ac',
+                  '1',
+                  '-b:a',
+                  '96k',
+                  formCryTarget,
+                ],
+                { stdio: 'inherit' },
+              );
+              hasFormCry = true;
+            }
+          }
+        } else {
+          hasFormCry = variant.id !== defaultVariant.id;
+        }
+
+        seenForms.add(name);
+        forms.push({ name, hasCry: hasFormCry });
+      }
+    }
+
+    const formSounds = forms.length > 0 && forms.every((form) => form.hasCry);
+    const formNames = forms.map((form) =>
+      !formSounds && form.hasCry ? `@${form.name}` : form.name,
+    );
+
     const entry = { species_id: String(id), identifier };
-    if (forms.length > 0) {
-      entry.forms = defaultSuffix ? [`!${defaultSuffix}`, ...forms] : forms;
+    if (formNames.length > 0) {
+      entry.forms = defaultSuffix ? [`!${defaultSuffix}`, ...formNames] : formNames;
       entry.formSounds = formSounds;
-      formCount += forms.length + (defaultSuffix ? 1 : 0);
+      formCount += formNames.length + (defaultSuffix ? 1 : 0);
     }
     entries.push(entry);
   }
@@ -383,7 +633,7 @@ const main = async () => {
 
   const generation = Number(getArg('--gen'));
   if (!GENERATIONS[generation]) {
-    throw new Error('Missing or invalid --gen (expected 7, 8, or 9)');
+    throw new Error('Missing or invalid --gen (expected 1-9)');
   }
 
   await importPokemon(generation, parseIds(getArg('--ids')), args.includes('--force'));

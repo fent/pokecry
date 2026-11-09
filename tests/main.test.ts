@@ -295,7 +295,7 @@ describe('pokecry', () => {
     }
   });
 
-  it('has unique species ids and identifiers', async () => {
+  it('has unique species ids, identifiers, and form names', async () => {
     await start();
 
     const allPokemon = Object.values(
@@ -304,6 +304,43 @@ describe('pokecry', () => {
 
     expect(new Set(allPokemon.map((pokemon) => pokemon.species_id)).size).toBe(allPokemon.length);
     expect(new Set(allPokemon.map((pokemon) => pokemon.identifier)).size).toBe(allPokemon.length);
+
+    for (const pokemon of allPokemon) {
+      const forms = (pokemon.forms ?? []).map((form) => form.replace(/^[!@]/, ''));
+      expect(new Set(forms).size).toBe(forms.length);
+    }
+  });
+
+  it('includes shared-id and cosmetic forms from PokeAPI', async () => {
+    await start();
+
+    const allPokemon = Object.values(
+      (window as unknown as { pokemon: Record<string, PokemonWithForms[]> }).pokemon,
+    ).flat();
+    const byId = (id: string): PokemonWithForms => {
+      const pokemon = allPokemon.find((candidate) => candidate.species_id === id);
+      if (!pokemon) {
+        throw new Error(`Missing Pokemon ${id}`);
+      }
+      return pokemon;
+    };
+
+    expect(byId('172').forms).toEqual(['spiky-eared']);
+    expect(byId('201').forms).toEqual(expect.arrayContaining(['exclamation', 'question']));
+    expect(byId('493').forms).toContain('fairy');
+    expect(byId('592').forms).toEqual(['!male', 'female']);
+    expect(byId('593').forms).toEqual(['!male', 'female']);
+    expect(byId('668').forms).toEqual(['!male', 'female']);
+    expect(byId('854').forms).toEqual(['!phony', 'antique']);
+    expect(byId('855').forms).toEqual(['!phony', 'antique']);
+    expect(byId('869').forms).toHaveLength(63);
+    expect(byId('869').forms?.[0]).toBe('!vanilla-cream-strawberry-sweet');
+    expect(byId('1007').forms).toEqual(['!apex-build', 'sprinting-build', 'gliding-build']);
+    expect(byId('1007').formSounds).toBe(true);
+    expect(byId('1008').forms).toEqual(['!ultimate-mode', 'drive-mode', 'glide-mode']);
+    expect(byId('1008').formSounds).toBe(true);
+    expect(byId('1012').forms).toEqual(['!counterfeit', 'artisan']);
+    expect(byId('1013').forms).toEqual(['!unremarkable', 'masterpiece']);
   });
 
   it('plays the current cry from the play button', async () => {
