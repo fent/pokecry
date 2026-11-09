@@ -618,6 +618,27 @@ describe('pokecry', () => {
     expect(gen2!.getAttribute('aria-pressed')).toBe('false');
   });
 
+  it('picks options only from enabled generations', async () => {
+    (window as unknown as { __POKECRY_TEST__: boolean }).__POKECRY_TEST__ = true;
+    await start();
+
+    const hooks = (
+      window as unknown as {
+        __pokecryTest: {
+          nextRound: () => void;
+          getGeneration: (generation: number) => PokemonWithForms[];
+        };
+      }
+    ).__pokecryTest;
+
+    document.querySelector<HTMLButtonElement>('.gen-1')!.click();
+    document.querySelector<HTMLButtonElement>('.gen-7')!.click();
+    hooks.nextRound();
+
+    const allowedIds = new Set(hooks.getGeneration(7).map((pokemon) => pokemon.species_id));
+    expect(options().every((option) => allowedIds.has(option.dataset.speciesId ?? ''))).toBe(true);
+  });
+
   it('selects and unselects all generations', async () => {
     await start();
     expect(allGens().getAttribute('aria-pressed')).toBe('mixed');
