@@ -461,6 +461,12 @@ describe('pokecry', () => {
       'paldea-blaze-breed',
       'paldea-aqua-breed',
     ]);
+
+    expect(byId(3, '382').forms).toBeUndefined();
+    expect(byId(6, '382').forms).toEqual(['primal']);
+    expect(byId(6, '382').baseForm).toBe(false);
+    expect(byId(3, '383').forms).toBeUndefined();
+    expect(byId(6, '383').forms).toEqual(['primal']);
   });
 
   it('plays the current cry from the play button', async () => {

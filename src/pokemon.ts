@@ -1956,11 +1956,25 @@ pokemon.gen3 = [
   },
   {
     "species_id": "382",
-    "identifier": "kyogre"
+    "identifier": "kyogre",
+    "forms": [
+      "primal"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "primal": 6
+    }
   },
   {
     "species_id": "383",
-    "identifier": "groudon"
+    "identifier": "groudon",
+    "forms": [
+      "primal"
+    ],
+    "formSounds": true,
+    "formGenerations": {
+      "primal": 6
+    }
   },
   {
     "species_id": "384",
