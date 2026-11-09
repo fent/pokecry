@@ -335,9 +335,21 @@ describe('pokecry', () => {
     expect(byId('855').forms).toEqual(['!phony', 'antique']);
     expect(byId('869').forms).toHaveLength(63);
     expect(byId('869').forms?.[0]).toBe('!vanilla-cream-strawberry-sweet');
-    expect(byId('1007').forms).toEqual(['!apex-build', 'sprinting-build', 'gliding-build']);
+    expect(byId('1007').forms).toEqual([
+      '!apex-build',
+      'limited-build',
+      'sprinting-build',
+      'swimming-build',
+      'gliding-build',
+    ]);
     expect(byId('1007').formSounds).toBe(true);
-    expect(byId('1008').forms).toEqual(['!ultimate-mode', 'drive-mode', 'glide-mode']);
+    expect(byId('1008').forms).toEqual([
+      '!ultimate-mode',
+      'low-power-mode',
+      'drive-mode',
+      'aquatic-mode',
+      'glide-mode',
+    ]);
     expect(byId('1008').formSounds).toBe(true);
     expect(byId('1012').forms).toEqual(['!counterfeit', 'artisan']);
     expect(byId('1013').forms).toEqual(['!unremarkable', 'masterpiece']);

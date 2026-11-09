@@ -4494,7 +4494,9 @@ pokemon.gen9 = [
     "identifier": "koraidon",
     "forms": [
       "!apex-build",
+      "limited-build",
       "sprinting-build",
+      "swimming-build",
       "gliding-build"
     ],
     "formSounds": true
@@ -4504,7 +4506,9 @@ pokemon.gen9 = [
     "identifier": "miraidon",
     "forms": [
       "!ultimate-mode",
+      "low-power-mode",
       "drive-mode",
+      "aquatic-mode",
       "glide-mode"
     ],
     "formSounds": true
