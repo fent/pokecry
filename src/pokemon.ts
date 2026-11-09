@@ -1625,8 +1625,13 @@ pokemon.gen3 = [
   {
     "species_id": "386",
     "identifier": "deoxys",
-    "forms": ["!normal", "speed"],
-    "formSounds": false
+    "forms": [
+      "!normal",
+      "attack",
+      "defense",
+      "speed"
+    ],
+    "formSounds": true
   }
 ];
 pokemon.gen4 = [
@@ -3071,7 +3076,12 @@ pokemon.gen6 = [
   },
   {
     "species_id": "720",
-    "identifier": "hoopa"
+    "identifier": "hoopa",
+    "forms": [
+      "!confined",
+      "unbound"
+    ],
+    "formSounds": true
   },
   {
     "species_id": "721",
@@ -3147,7 +3157,11 @@ pokemon.gen7 = [
   },
   {
     "species_id": "738",
-    "identifier": "vikavolt"
+    "identifier": "vikavolt",
+    "forms": [
+      "totem"
+    ],
+    "formSounds": true
   },
   {
     "species_id": "739",
@@ -3169,16 +3183,28 @@ pokemon.gen7 = [
   },
   {
     "species_id": "743",
-    "identifier": "ribombee"
+    "identifier": "ribombee",
+    "forms": [
+      "totem"
+    ],
+    "formSounds": true
   },
   {
     "species_id": "744",
-    "identifier": "rockruff"
+    "identifier": "rockruff",
+    "forms": [
+      "own-tempo"
+    ],
+    "formSounds": true
   },
   {
     "species_id": "745",
     "identifier": "lycanroc",
-    "forms": ["!midday", "midnight"],
+    "forms": [
+      "!midday",
+      "midnight",
+      "dusk"
+    ],
     "formSounds": true
   },
   {
@@ -3209,7 +3235,11 @@ pokemon.gen7 = [
   },
   {
     "species_id": "752",
-    "identifier": "araquanid"
+    "identifier": "araquanid",
+    "forms": [
+      "totem"
+    ],
+    "formSounds": true
   },
   {
     "species_id": "753",
@@ -3217,7 +3247,11 @@ pokemon.gen7 = [
   },
   {
     "species_id": "754",
-    "identifier": "lurantis"
+    "identifier": "lurantis",
+    "forms": [
+      "totem"
+    ],
+    "formSounds": true
   },
   {
     "species_id": "755",
@@ -3233,7 +3267,11 @@ pokemon.gen7 = [
   },
   {
     "species_id": "758",
-    "identifier": "salazzle"
+    "identifier": "salazzle",
+    "forms": [
+      "totem"
+    ],
+    "formSounds": true
   },
   {
     "species_id": "759",
@@ -3335,7 +3373,11 @@ pokemon.gen7 = [
   },
   {
     "species_id": "777",
-    "identifier": "togedemaru"
+    "identifier": "togedemaru",
+    "forms": [
+      "totem"
+    ],
+    "formSounds": true
   },
   {
     "species_id": "778",

@@ -343,6 +343,33 @@ describe('pokecry', () => {
     expect(byId('1013').forms).toEqual(['!unremarkable', 'masterpiece']);
   });
 
+  it('includes same-generation alternate forms', async () => {
+    await start();
+
+    const allPokemon = Object.values(
+      (window as unknown as { pokemon: Record<string, PokemonWithForms[]> }).pokemon,
+    ).flat();
+    const byId = (id: string): PokemonWithForms => {
+      const pokemon = allPokemon.find((candidate) => candidate.species_id === id);
+      if (!pokemon) {
+        throw new Error(`Missing Pokemon ${id}`);
+      }
+      return pokemon;
+    };
+
+    expect(byId('386').forms).toEqual(['!normal', 'attack', 'defense', 'speed']);
+    expect(byId('386').formSounds).toBe(true);
+    expect(byId('720').forms).toEqual(['!confined', 'unbound']);
+    expect(byId('738').forms).toEqual(['totem']);
+    expect(byId('743').forms).toEqual(['totem']);
+    expect(byId('744').forms).toEqual(['own-tempo']);
+    expect(byId('745').forms).toEqual(['!midday', 'midnight', 'dusk']);
+    expect(byId('752').forms).toEqual(['totem']);
+    expect(byId('754').forms).toEqual(['totem']);
+    expect(byId('758').forms).toEqual(['totem']);
+    expect(byId('777').forms).toEqual(['totem']);
+  });
+
   it('plays the current cry from the play button', async () => {
     await start();
     const audio = currentAudio();
