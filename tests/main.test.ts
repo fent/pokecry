@@ -47,6 +47,7 @@ const playButton = (): HTMLButtonElement => document.querySelector<HTMLButtonEle
 const sprite = (): HTMLImageElement => document.querySelector<HTMLImageElement>('.pokemon-sprite')!;
 const endScreen = (): HTMLDivElement => document.querySelector<HTMLDivElement>('.end-screen')!;
 const score = (): HTMLSpanElement => document.querySelector<HTMLSpanElement>('.score')!;
+const remaining = (): HTMLSpanElement => document.querySelector<HTMLSpanElement>('.remaining')!;
 const status = (): HTMLParagraphElement => document.querySelector<HTMLParagraphElement>('.status')!;
 const allGens = (): HTMLButtonElement => document.querySelector<HTMLButtonElement>('.gen-all')!;
 const endGame = (): HTMLButtonElement => document.querySelector<HTMLButtonElement>('.end-game')!;
@@ -199,6 +200,8 @@ describe('pokecry', () => {
     expect(buttons.every((button) => button.textContent)).toBe(true);
     expect(playButton().classList.contains('hidden')).toBe(false);
     expect(sprite().classList.contains('hidden')).toBe(true);
+    expect(remaining().textContent).toBe(`${gen1Count()} left`);
+    expect(remaining().classList.contains('hidden')).toBe(true);
     expect(document.querySelector('.gen-1')?.getAttribute('aria-pressed')).toBe('true');
   });
 
@@ -637,6 +640,40 @@ describe('pokecry', () => {
 
     const allowedIds = new Set(hooks.getGeneration(7).map((pokemon) => pokemon.species_id));
     expect(options().every((option) => allowedIds.has(option.dataset.speciesId ?? ''))).toBe(true);
+  });
+
+  it('shows the remaining count after a generation change', async () => {
+    await start();
+
+    expect(remaining().classList.contains('hidden')).toBe(true);
+
+    document.querySelector<HTMLButtonElement>('.gen-2')!.click();
+    expect(remaining().textContent).toBe(`${gen1Count() + generationData('gen2').length} left`);
+    expect(remaining().classList.contains('hidden')).toBe(false);
+  });
+
+  it('updates the remaining count for generations and guesses', async () => {
+    await start();
+
+    expect(remaining().classList.contains('hidden')).toBe(true);
+
+    guessCorrect();
+    expect(remaining().textContent).toBe(`${gen1Count() - 1} left`);
+    expect(remaining().classList.contains('hidden')).toBe(false);
+
+    advanceRound();
+    expect(remaining().textContent).toBe(`${gen1Count() - 1} left`);
+
+    const gen2 = document.querySelector<HTMLButtonElement>('.gen-2')!;
+    gen2.click();
+    expect(remaining().textContent).toBe(`${gen1Count() + generationData('gen2').length - 1} left`);
+
+    gen2.click();
+    expect(remaining().textContent).toBe(`${gen1Count() - 1} left`);
+
+    document.querySelector<HTMLButtonElement>('.gen-1')!.click();
+    expect(remaining().textContent).toBe('0 left');
+    expect(remaining().classList.contains('hidden')).toBe(true);
   });
 
   it('selects and unselects all generations', async () => {

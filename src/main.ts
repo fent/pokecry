@@ -218,6 +218,7 @@ const arePokemonLeft = (): boolean => {
 // Keep track of player stats.
 let totalGuesses = 0;
 let correctGuesses = 0;
+let showRemaining = false;
 let restorePlayFocus = false;
 let roundActive = false;
 let revealTimer: number | undefined;
@@ -241,11 +242,26 @@ const successElement = requireElement<HTMLHeadingElement>('.success');
 const failureElement = requireElement<HTMLHeadingElement>('.failure');
 const fillerElement = requireElement<HTMLHeadingElement>('.filler');
 const scoreElement = requireElement<HTMLSpanElement>('.score');
+const remainingElement = requireElement<HTMLSpanElement>('.remaining');
 const spriteElement = requireElement<HTMLImageElement>('.pokemon-sprite');
 const playElement = requireElement<HTMLButtonElement>('.play');
 const endGameElement = requireElement<HTMLButtonElement>('.end-game');
 const statusElement = requireElement<HTMLParagraphElement>('.status');
 const endScreenElement = requireElement<HTMLDivElement>('.end-screen');
+
+const updateRemaining = (): void => {
+  let count = 0;
+  for (let i = 0, len = pokemonLeft.length; i < len; i++) {
+    count += pokemonLeft[i].length;
+  }
+  if (roundActive) {
+    count += 1;
+  }
+
+  remainingElement.textContent = `${count} left`;
+  remainingElement.setAttribute('aria-label', `${count} Pokemon left to guess`);
+  remainingElement.classList.toggle('hidden', !showRemaining || count === 0);
+};
 
 const setHidden = (element: Element, hidden: boolean): void => {
   element.classList.toggle('hidden', hidden);
@@ -316,7 +332,9 @@ let theCry: HTMLAudioElement;
 // Called whenever the user guesses on a pokemon.
 const guess = (option: HTMLButtonElement): void => {
   totalGuesses++;
+  showRemaining = true;
   roundActive = false;
+  updateRemaining();
   const isCorrect = option.dataset.speciesId === thePokemon.species_id;
   restorePlayFocus = document.activeElement === option;
   if (isCorrect) {
@@ -411,6 +429,7 @@ const nextRound = (): void => {
   }
   spriteElement.alt = 'Mystery Pokemon';
   setHidden(spriteElement, true);
+  updateRemaining();
 };
 
 const displayEndScreen = (): void => {
@@ -420,6 +439,7 @@ const displayEndScreen = (): void => {
     showingEmptyState = false;
   }
   roundActive = false;
+  updateRemaining();
   setHidden(endGameElement, true);
   clearEndScreenTimers();
   endScreenElement.replaceChildren();
@@ -464,6 +484,7 @@ const showEmptyState = (): void => {
   cancelReveal();
   clearEndScreenTimers();
   roundActive = false;
+  updateRemaining();
   showingEmptyState = true;
   setHidden(playElement, false);
   playElement.disabled = true;
@@ -498,6 +519,7 @@ const updateGenerationButtons = (): void => {
 
 const refreshGame = (): void => {
   updatePokemon();
+  updateRemaining();
   if (allPokemon.length === 0) {
     showEmptyState();
     return;
@@ -525,6 +547,7 @@ for (let i = 0, len = genElements.length; i < len; i++) {
   const generation = Number(genElement.dataset.gen) as Generation;
   genElement.addEventListener('click', () => {
     gens[generation].enabled = !gens[generation].enabled;
+    showRemaining = true;
     updateGenerationButtons();
     refreshGame();
   });
@@ -535,6 +558,7 @@ allGensElement.addEventListener('click', () => {
   for (const gen of Object.values(gens)) {
     gen.enabled = enableAll;
   }
+  showRemaining = true;
   updateGenerationButtons();
   refreshGame();
 });

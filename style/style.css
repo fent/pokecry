@@ -78,7 +78,17 @@ button {
 }
 
 .results {
+  position: relative;
   height: 80px;
+}
+
+.remaining {
+  position: absolute;
+  top: 0;
+  right: 10px;
+  color: var(--muted-strong);
+  font-size: 0.7em;
+  white-space: nowrap;
 }
 
 .success,
