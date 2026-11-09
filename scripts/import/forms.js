@@ -1,11 +1,25 @@
+/**
+ * Form planning and form-asset candidate selection.
+ *
+ * PokeAPI can attach several named forms to one Pokemon ID (for example
+ * Alcremie) and can give alternate forms their own Pokemon IDs (for example
+ * Koraidon's build modes). planForms normalizes both layouts into one default
+ * form plus alternate names.
+ *
+ * Sprite candidates are intentionally ordered from most specific to most
+ * generic so the importer can stop at the first existing file.
+ */
 import { join } from 'node:path';
-import { CACHE, SPRITES_SHA } from './config.mjs';
+import { CACHE, SPRITES_SHA } from './config.js';
 
+// Prefer PokeAPI's form_identifier, falling back to the pokemon identifier
+// suffix (for older rows without a forms entry).
 export const formSuffix = (speciesIdentifier, pokemon, form) => {
   const suffix = form?.form_identifier || pokemon.identifier.slice(speciesIdentifier.length + 1);
   return suffix || '';
 };
 
+// Mega/Gmax forms are intentionally out of scope for this game.
 export const isExcludedForm = (pokemon, form) =>
   form?.is_mega === '1' || form?.form_identifier === 'gmax' || pokemon.identifier.endsWith('-gmax');
 
@@ -15,6 +29,8 @@ export const planForms = ({ speciesId, identifier, variants, formsByPokemon }) =
     throw new Error(`No Pokemon data found for species ${speciesId}`);
   }
 
+  // The default variant can still have multiple named forms (Alcremie), so
+  // find the row explicitly marked default before falling back to the first.
   const defaultForms = formsByPokemon.get(defaultVariant.id) ?? [];
   const defaultForm =
     defaultForms.find((form) => form.is_default === '1') ?? defaultForms[0] ?? null;
@@ -24,6 +40,8 @@ export const planForms = ({ speciesId, identifier, variants, formsByPokemon }) =
   const skipped = [];
   const seen = new Set();
 
+  // Walk every variant and every form row for that variant. This is what makes
+  // shared-ID forms (Alcremie) and separate-ID forms (Koraidon) behave alike.
   for (const variant of variants) {
     const variantForms = formsByPokemon.get(variant.id) ?? [];
     const candidates =
@@ -61,6 +79,11 @@ export const planForms = ({ speciesId, identifier, variants, formsByPokemon }) =
   return { defaultVariant, defaultSuffix, forms, skipped };
 };
 
+// Ordered fallbacks:
+//   1. sprite for a distinct alternate Pokemon ID
+//   2. generation-specific versioned sprite
+//   3. form-specific sprite under the standard Pokemon path
+//   4. official artwork
 export const spriteCandidates = (config, variant, defaultVariant, name) => {
   const candidates = [];
   if (variant.id !== defaultVariant.id) {
@@ -98,6 +121,8 @@ export const spriteCandidates = (config, variant, defaultVariant, name) => {
   return candidates;
 };
 
+// Build the data-file form fields. `formSounds: true` means every alternate
+// form has its own cry; otherwise only those forms get an `@` marker.
 export const formEntry = (forms, defaultSuffix) => {
   const formSounds = forms.length > 0 && forms.every((form) => form.hasCry);
   const alternateNames = forms.map((form) =>

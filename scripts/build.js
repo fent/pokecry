@@ -1,7 +1,9 @@
-const { execFileSync } = require('node:child_process');
-const { cpSync, mkdirSync, rmSync } = require('node:fs');
-const { join } = require('node:path');
+import { execFileSync } from 'node:child_process';
+import { cpSync, mkdirSync, rmSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { join } from 'node:path';
 
+const require = createRequire(import.meta.url);
 const root = process.cwd();
 const outDir = join(root, 'dist');
 

@@ -23,7 +23,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['scripts/**/*.js', 'scripts/**/*.mjs', '*.mjs'],
+    files: ['scripts/**/*.js', '*.js'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
@@ -34,16 +34,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['scripts/**/*.js'],
-    languageOptions: {
-      sourceType: 'commonjs',
-    },
-    rules: {
-      '@typescript-eslint/no-require-imports': 'off',
-    },
-  },
-  {
-    files: ['tests/**/*.ts', 'vitest.config.mts'],
+    files: ['tests/**/*.ts', 'tests/**/*.js', 'vitest.config.mts'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',

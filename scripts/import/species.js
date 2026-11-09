@@ -1,10 +1,24 @@
+/**
+ * Imports one species and all of its forms.
+ *
+ * Flow:
+ *   1. plan the default form and alternate form names
+ *   2. ensure the base sprite/cry exist (without overwriting unless --force)
+ *   3. resolve each form sprite and optional form cry
+ *   4. return the data entry plus skip diagnostics
+ *
+ * Fallback sprites for old generations are resized to the base sprite's
+ * dimensions so modern PokeAPI images don't look oversized next to the
+ * generation-specific assets.
+ */
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { CACHE, CRIES_SHA, ROOT, SPRITES_SHA } from './config.mjs';
-import { download, downloadOptional } from './files.mjs';
-import { formEntry, planForms, spriteCandidates } from './forms.mjs';
-import { pngSize, writeCry, writeSprite } from './media.mjs';
+import { CACHE, CRIES_SHA, ROOT, SPRITES_SHA } from './config.js';
+import { download, downloadOptional } from './files.js';
+import { formEntry, planForms, spriteCandidates } from './forms.js';
+import { pngSize, writeCry, writeSprite } from './media.js';
 
+// Keep existing base assets; only download when missing (or when forced).
 const ensureBaseAssets = async (id, config, force) => {
   const spriteTarget = join(ROOT, 'media/sprites', config.spritesDir, `${id}.png`);
   if (force || !existsSync(spriteTarget)) {
@@ -25,6 +39,7 @@ const ensureBaseAssets = async (id, config, force) => {
   return spriteTarget;
 };
 
+// Return the first candidate that exists, rather than failing on the first 404.
 const findFormSprite = async (candidates, force) => {
   for (const candidate of candidates) {
     const source = await downloadOptional(candidate.url, candidate.cache, force);
@@ -35,6 +50,8 @@ const findFormSprite = async (candidates, force) => {
   return null;
 };
 
+// Shared-ID forms reuse the base cry; only alternate Pokemon IDs can have a
+// distinct form cry in PokeAPI.
 const importFormCry = async ({ id, name, variant, defaultVariant, config, force }) => {
   if (variant.id === defaultVariant.id) {
     return false;
@@ -80,6 +97,7 @@ export const importSpecies = async ({
   for (const { variant, name } of planned.forms) {
     const formSpriteTarget = join(ROOT, 'media/sprites', config.spritesDir, `${id}-${name}.png`);
 
+    // Existing form assets are left alone; new ones probe the fallback chain.
     let sprite = null;
     if (force || !existsSync(formSpriteTarget)) {
       sprite = await findFormSprite(
@@ -93,6 +111,8 @@ export const importSpecies = async ({
     }
 
     if (sprite) {
+      // Artwork always needs resizing. Standard sprites from the modern PokeAPI
+      // path also need it for Gen 1-4 folders, which use smaller sprites.
       const resize =
         sprite.kind === 'artwork' || (sprite.kind === 'standard' && generation <= 4)
           ? {
@@ -115,6 +135,7 @@ export const importSpecies = async ({
     forms.push({ name, hasCry });
   }
 
+  // Only write form fields when there is at least one alternate form.
   const formData = formEntry(forms, planned.defaultSuffix);
   const entry = { species_id: String(id), identifier: species.identifier };
   if (formData.alternateNames.length > 0) {

@@ -1,7 +1,14 @@
+/**
+ * Remote source and CSV helpers.
+ *
+ * Downloads are cached under .cache/pokecry-import. `downloadOptional` treats a
+ * 404 as an expected absence, which is how sprite fallbacks are probed.
+ */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { CACHE, POKEAPI_SHA } from './config.mjs';
+import { CACHE, POKEAPI_SHA } from './config.js';
 
+// Download a required source file. Existing caches are reused unless forced.
 export const download = async (url, path, force) => {
   if (!force && existsSync(path)) {
     return path;
@@ -17,6 +24,7 @@ export const download = async (url, path, force) => {
   return path;
 };
 
+// Like download(), but returns null for a 404 so callers can try a fallback.
 export const downloadOptional = async (url, path, force) => {
   if (!force && existsSync(path)) {
     return path;
@@ -35,6 +43,8 @@ export const downloadOptional = async (url, path, force) => {
   return path;
 };
 
+// Small dependency-free CSV parser. PokeAPI's CSVs use quoted fields and
+// doubled quotes, but no embedded newlines in the files this importer reads.
 const parseCsv = (text) => {
   const rows = [];
   let row = [];
@@ -76,6 +86,7 @@ const parseCsv = (text) => {
   return rows;
 };
 
+// Load a PokeAPI CSV at the pinned SHA and return rows keyed by header name.
 export const loadCsv = async (name, force) => {
   const url = `https://raw.githubusercontent.com/PokeAPI/pokeapi/${POKEAPI_SHA}/data/v2/csv/${name}`;
   const path = join(CACHE, `pokeapi-${POKEAPI_SHA}`, name);

@@ -1,7 +1,15 @@
+/**
+ * Shared importer configuration.
+ *
+ * Source SHAs are pinned so repeated imports are reproducible. Each generation
+ * maps to the runtime sprite/cry folders, the generated data key, and the
+ * PokeAPI versioned sprite directory used for older-generation assets.
+ */
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..');
+// Downloads are cached here between runs; .cache is gitignored.
 export const CACHE = join(ROOT, '.cache/pokecry-import');
 export const FFMPEG = process.env.FFMPEG_BIN || 'ffmpeg';
 
@@ -63,8 +71,8 @@ export const GENERATIONS = {
 };
 
 export const USAGE = `Usage:
-  node scripts/import-pokemon.mjs --gen <1-9> --ids <id|start-end>[, ...] [--force]
-  node scripts/import-pokemon.mjs --normalize-audio
+  node scripts/import-pokemon.js --gen <1-9> --ids <id|start-end>[, ...] [--force]
+  node scripts/import-pokemon.js --normalize-audio
 
 Options:
   --force             Redownload source files and overwrite existing assets.

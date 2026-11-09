@@ -1,9 +1,19 @@
+/**
+ * Writes imported entries into src/pokemon.ts.
+ *
+ * The data file is generated but intentionally not rebuilt wholesale on every
+ * import: only the requested species objects are replaced, preserving existing
+ * formatting and keeping diffs reviewable. If a species is new, the whole array
+ * is rewritten so it remains sorted.
+ */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { ROOT } from './config.mjs';
+import { ROOT } from './config.js';
 
+// Serialize one entry with the indentation used by the surrounding array.
 const entryText = (entry) => JSON.stringify(entry, null, 2).replace(/\n/g, '\n  ');
 
+// Locate top-level {...} entries while ignoring braces inside quoted strings.
 const topLevelObjectRanges = (arrayText) => {
   const ranges = [];
   let depth = 0;
@@ -44,11 +54,13 @@ const topLevelObjectRanges = (arrayText) => {
   return ranges;
 };
 
+// Full-array fallback used only when adding a new species.
 const rewriteArray = (entries) => {
   const body = entries.map((entry) => '  ' + entryText(entry)).join(',\n');
   return '[\n' + body + (body ? ',\n' : '') + ']';
 };
 
+// Replace or append entries in pokemon.<dataKey>, then write the file back.
 export const updateData = (dataKey, entries) => {
   const dataPath = join(ROOT, 'src/pokemon.ts');
   const data = readFileSync(dataPath, 'utf8');

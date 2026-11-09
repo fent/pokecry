@@ -1,8 +1,18 @@
-import { GENERATIONS, USAGE } from './import/config.mjs';
-import { loadCsv } from './import/files.mjs';
-import { normalizeAudio, requireFfmpeg } from './import/media.mjs';
-import { updateData } from './import/pokemon-data.mjs';
-import { importSpecies } from './import/species.mjs';
+/**
+ * PokeAPI import CLI.
+ *
+ * This module only parses arguments and coordinates the import. PokeAPI CSV
+ * loading, form planning, media conversion, and src/pokemon.ts rewriting live
+ * in scripts/import/.
+ *
+ *   node scripts/import-pokemon.js --gen <1-9> --ids <id|range> [--force]
+ *   node scripts/import-pokemon.js --normalize-audio
+ */
+import { GENERATIONS, USAGE } from './import/config.js';
+import { loadCsv } from './import/files.js';
+import { normalizeAudio, requireFfmpeg } from './import/media.js';
+import { updateData } from './import/pokemon-data.js';
+import { importSpecies } from './import/species.js';
 
 const args = process.argv.slice(2);
 
@@ -11,6 +21,7 @@ const getArg = (flag) => {
   return index === -1 ? undefined : args[index + 1];
 };
 
+// Accepts "6", "1-9", and comma-separated combinations of both.
 const parseIds = (value) => {
   if (!value) {
     throw new Error('Missing --ids');
@@ -39,6 +50,7 @@ const importPokemon = async (generation, ids, force) => {
     throw new Error(`Unsupported generation: ${generation}`);
   }
 
+  // Load the three PokeAPI tables once, then index them by species and form.
   const speciesRows = await loadCsv('pokemon_species.csv', force);
   const pokemonRows = await loadCsv('pokemon.csv', force);
   const formRows = await loadCsv('pokemon_forms.csv', force);
@@ -61,6 +73,8 @@ const importPokemon = async (generation, ids, force) => {
   const skipped = [];
   let formCount = 0;
 
+  // importSpecies handles one species at a time; this loop only collects the
+  // resulting data entries and diagnostics.
   for (const id of ids) {
     const species = speciesById.get(id);
     if (!species) {

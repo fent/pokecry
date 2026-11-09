@@ -2,6 +2,7 @@
   "name": "pokecry",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "description": "Guess Who's That Pokemon from its in-game cry.",
   "homepage": "https://fent.github.io/pokecry/",
   "license": "MIT",
@@ -20,8 +21,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "import:pokemon": "node scripts/import-pokemon.mjs",
-    "normalize:audio": "node scripts/import-pokemon.mjs --normalize-audio",
+    "import:pokemon": "node scripts/import-pokemon.js",
+    "normalize:audio": "node scripts/import-pokemon.js --normalize-audio",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check": "npm run format:check && npm run lint && npm run typecheck"

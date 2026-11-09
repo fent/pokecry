@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formEntry, formSuffix, planForms, spriteCandidates } from '../scripts/import/forms.mjs';
+import { formEntry, formSuffix, planForms, spriteCandidates } from '../scripts/import/forms.js';
 
 describe('import form planning', () => {
   it('derives form suffixes from PokeAPI identifiers', () => {
