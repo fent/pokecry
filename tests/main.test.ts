@@ -548,6 +548,19 @@ describe('pokecry', () => {
     expect(getComputedStyle(sprite()).height).toBe('110px');
   });
 
+  it('keeps the media area height stable when revealing the sprite', async () => {
+    loadStyles();
+    await start();
+
+    const media = document.querySelector<HTMLDivElement>('.media')!;
+    expect(getComputedStyle(media).height).toBe('110px');
+    expect(getComputedStyle(sprite()).display).toBe('none');
+
+    guessCorrect();
+    expect(getComputedStyle(media).height).toBe('110px');
+    expect(getComputedStyle(sprite()).display).not.toBe('none');
+  });
+
   it('ignores clicks that are not on an option', async () => {
     await start();
     const optionsElement = document.querySelector<HTMLDivElement>('.options')!;

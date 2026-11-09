@@ -95,12 +95,20 @@ button {
   padding-left: 10px;
 }
 
+.media {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 110px;
+}
+
 .play {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 80px;
   height: 80px;
+  flex: none;
   padding: 0 0 0 5px;
   border: 0;
   border-radius: 100%;
@@ -124,6 +132,7 @@ button {
 .pokemon-sprite {
   width: 120px;
   height: 110px;
+  flex: none;
 }
 
 .options {
@@ -321,6 +330,10 @@ button {
 
   .content {
     width: 90%;
+  }
+
+  .media {
+    height: 240px;
   }
 
   .play {
