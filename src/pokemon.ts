@@ -2771,7 +2771,7 @@ pokemon.gen6 = [
     "identifier": "vivillon",
     "forms": [
       "archipelago", "continental", "elegant", "fancy", "garden", "high-plains",
-      "!icy-show", "jungle", "marine", "meadow", "modern", "monsoon", "ocean",
+      "!icy-snow", "jungle", "marine", "meadow", "modern", "monsoon", "ocean",
       "poke-ball", "polar", "river", "sandstorm", "savanna", "sun", "tundra"
     ],
     "formSounds": false
@@ -3229,7 +3229,7 @@ pokemon.gen7 = [
   },
   {
     "species_id": "772",
-    "identifier": "type"
+    "identifier": "type-null"
   },
   {
     "species_id": "773",
@@ -3264,7 +3264,7 @@ pokemon.gen7 = [
   {
     "species_id": "778",
     "identifier": "mimikyu",
-    "forms": ["!busted", "disguised", "totem-busted", "totem-disguised"],
+    "forms": ["!disguised", "busted", "totem-busted", "totem-disguised"],
     "formSounds": false
   },
   {
@@ -3295,19 +3295,19 @@ pokemon.gen7 = [
   },
   {
     "species_id": "785",
-    "identifier": "tapu"
+    "identifier": "tapu-koko"
   },
   {
     "species_id": "786",
-    "identifier": "tapu"
+    "identifier": "tapu-lele"
   },
   {
     "species_id": "787",
-    "identifier": "tapu"
+    "identifier": "tapu-bulu"
   },
   {
     "species_id": "788",
-    "identifier": "tapu"
+    "identifier": "tapu-fini"
   },
   {
     "species_id": "789",

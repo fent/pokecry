@@ -54,23 +54,51 @@ const generationButtons = (): HTMLButtonElement[] =>
   Array.from(document.querySelectorAll<HTMLButtonElement>('.gen[data-gen]'));
 const filler = (): HTMLHeadingElement => document.querySelector<HTMLHeadingElement>('.filler')!;
 
-type PokemonWithForms = { species_id: string; forms?: string[] };
+type PokemonWithForms = {
+  species_id: string;
+  identifier: string;
+  forms?: string[];
+  formSounds?: boolean;
+  formSprites?: boolean;
+};
 
-const generationData = (key: 'gen8' | 'gen9'): PokemonWithForms[] =>
+const generationAssets: Record<string, [string, string]> = {
+  gen1: ['yellow', 'legacy'],
+  gen2: ['crystal', 'legacy'],
+  gen3: ['emerald', 'legacy'],
+  gen4: ['platinum', 'legacy'],
+  gen5: ['black-white', 'legacy'],
+  gen6: ['x-y', 'latest'],
+  gen7: ['sun-moon', 'latest'],
+  gen8: ['sword-shield', 'latest'],
+  gen9: ['scarlet-violet', 'latest'],
+};
+
+const generationData = (key: string): PokemonWithForms[] =>
   (window as unknown as { pokemon: Record<string, PokemonWithForms[]> }).pokemon[key];
 
-const assertGenerationAssets = (pokemonList: PokemonWithForms[], spriteDir: string): void => {
+const assertGenerationAssets = (
+  pokemonList: PokemonWithForms[],
+  spriteDir: string,
+  cryDir: string,
+): void => {
   for (const pokemon of pokemonList) {
     expect(existsSync(`media/sprites/${spriteDir}/${pokemon.species_id}.png`)).toBe(true);
-    expect(existsSync(`media/cries/latest/${pokemon.species_id}.mp3`)).toBe(true);
+    expect(existsSync(`media/cries/${cryDir}/${pokemon.species_id}.mp3`)).toBe(true);
 
     for (const form of pokemon.forms ?? []) {
       if (form.startsWith('!')) {
         continue;
       }
       const name = form.replace(/^@/, '');
-      expect(existsSync(`media/sprites/${spriteDir}/${pokemon.species_id}-${name}.png`)).toBe(true);
-      expect(existsSync(`media/cries/latest/${pokemon.species_id}-${name}.mp3`)).toBe(true);
+      if (pokemon.formSprites !== false) {
+        expect(existsSync(`media/sprites/${spriteDir}/${pokemon.species_id}-${name}.png`)).toBe(
+          true,
+        );
+      }
+      if (pokemon.formSounds) {
+        expect(existsSync(`media/cries/${cryDir}/${pokemon.species_id}-${name}.mp3`)).toBe(true);
+      }
     }
   }
 };
@@ -257,11 +285,25 @@ describe('pokecry', () => {
     ).toBe(false);
   });
 
-  it('has assets for every generation 8 and 9 Pokemon and form', async () => {
+  it('has assets for every Pokemon and referenced form', async () => {
     await start();
 
-    assertGenerationAssets(generationData('gen8'), 'sword-shield');
-    assertGenerationAssets(generationData('gen9'), 'scarlet-violet');
+    const allPokemon = (window as unknown as { pokemon: Record<string, PokemonWithForms[]> })
+      .pokemon;
+    for (const [key, [spriteDir, cryDir]] of Object.entries(generationAssets)) {
+      assertGenerationAssets(allPokemon[key], spriteDir, cryDir);
+    }
+  });
+
+  it('has unique species ids and identifiers', async () => {
+    await start();
+
+    const allPokemon = Object.values(
+      (window as unknown as { pokemon: Record<string, PokemonWithForms[]> }).pokemon,
+    ).flat();
+
+    expect(new Set(allPokemon.map((pokemon) => pokemon.species_id)).size).toBe(allPokemon.length);
+    expect(new Set(allPokemon.map((pokemon) => pokemon.identifier)).size).toBe(allPokemon.length);
   });
 
   it('plays the current cry from the play button', async () => {
