@@ -164,6 +164,10 @@ button {
   cursor: pointer;
 }
 
+.option.hidden {
+  display: none;
+}
+
 .option:disabled {
   background: var(--muted);
   opacity: 1;
@@ -230,6 +234,26 @@ button {
 
 .gens .gen-all {
   width: 40px;
+}
+
+.difficulties-title {
+  margin-top: 20px;
+}
+
+.difficulty {
+  margin: 0 3px;
+  padding: 0.15em 0.8em;
+  border: 1px solid var(--muted-strong);
+  border-radius: 30px;
+  background: transparent;
+  color: var(--muted-strong);
+  font-size: 0.8em;
+  cursor: pointer;
+}
+
+.difficulty[aria-pressed='true'] {
+  color: var(--paper);
+  background: var(--ink);
 }
 
 [data-tooltip] {

@@ -6,3 +6,5 @@ coverage
 package-lock.json
 src/pokemon.ts
 media
+
+src/cry-similarity.ts

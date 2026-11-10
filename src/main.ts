@@ -3,6 +3,7 @@ const END_REVEAL_TIMEOUT = 50;
 const VOLUME = 0.5;
 
 type Generation = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
+type Difficulty = 'easy' | 'normal' | 'hard';
 
 interface GenerationPaths {
   spritesDir: string;
@@ -25,13 +26,14 @@ interface GenData extends GenerationConfig {
 
 // Pick a form for this round. The base form is one of the candidates, so
 // every form is equally likely instead of giving the base a flat 50%.
-const resolvePokemon = (entry: PokemonEntry): Pokemon => {
+const resolvePokemon = (entry: PokemonEntry, forcedForm?: string): Pokemon => {
   const def = entry.def;
   const formsAvailable =
     def.formSprites === false ? [] : (def.forms ?? []).filter((form) => form[0] !== '!');
   const forms = def.baseForm === false ? [] : [''];
   forms.push(...formsAvailable);
-  const form = forms[Math.floor(Math.random() * forms.length)];
+  const form =
+    forcedForm === undefined ? forms[Math.floor(Math.random() * forms.length)] : forcedForm;
 
   let spriteId = def.species_id;
   let cryId = def.species_id;
@@ -218,6 +220,7 @@ const arePokemonLeft = (): boolean => {
 };
 
 // Keep track of player stats.
+let difficulty: Difficulty = 'normal';
 let totalGuesses = 0;
 let correctGuesses = 0;
 let showRemaining = false;
@@ -240,6 +243,7 @@ const optionsElement = requireElement<HTMLDivElement>('.options');
 const optionElements = document.querySelectorAll<HTMLButtonElement>('.option');
 const genElements = document.querySelectorAll<HTMLButtonElement>('.gen[data-gen]');
 const allGensElement = requireElement<HTMLButtonElement>('.gen-all');
+const difficultyElements = document.querySelectorAll<HTMLButtonElement>('.difficulty');
 const resultsElement = requireElement<HTMLDivElement>('.results');
 const successElement = requireElement<HTMLHeadingElement>('.success');
 const failureElement = requireElement<HTMLHeadingElement>('.failure');
@@ -320,15 +324,89 @@ endGameElement.addEventListener('click', () => {
   displayEndScreen();
 });
 
-// Pick decoys that are not the answer, for the player to choose between.
-const pickDecoyPokemon = (speciesId: string, count: number): PokemonEntry[] => {
-  const seenIds = new Set([speciesId]);
-  const decoys: PokemonEntry[] = [];
+const optionCount = (): number => (difficulty === 'easy' ? 2 : 4);
+
+const setOptionVisibility = (count: number): void => {
+  for (let i = 0, len = optionElements.length; i < len; i++) {
+    setHidden(optionElements[i], i >= count);
+  }
+};
+
+const cryKeyIndex = new Map(cryKeys.map((key, index) => [key, index]));
+
+const cryKeyForPokemon = (pokemon: Pokemon): string =>
+  pokemon.cry.replace(/^media\/cries\//, '').replace(/\.mp3$/, '');
+
+const similarSpeciesIds = (answer: Pokemon): Set<string> => {
+  const answerIndex = cryKeyIndex.get(cryKeyForPokemon(answer))!;
+  const speciesIds = new Set<string>();
+  for (const neighborIndex of crySimilarity[answerIndex]) {
+    speciesIds.add(cryKeys[neighborIndex].split('/')[1].split('-')[0]);
+  }
+  return speciesIds;
+};
+
+const buildCryEntryIndex = (): Map<string, { entry: PokemonEntry; form: string }> => {
+  const index = new Map<string, { entry: PokemonEntry; form: string }>();
+
+  for (const list of allPokemon) {
+    for (const entry of list) {
+      const def = entry.def;
+      if (def.baseForm !== false) {
+        index.set(`${entry.paths.criesDir}/${def.species_id}`, { entry, form: '' });
+      }
+
+      for (const rawForm of def.forms ?? []) {
+        if (rawForm.startsWith('!')) {
+          continue;
+        }
+        const name = rawForm.replace(/^@/, '');
+        const formKey = `${entry.paths.criesDir}/${def.species_id}-${name}`;
+        index.set(formKey, { entry, form: rawForm });
+        if (!def.formSounds && !rawForm.startsWith('@')) {
+          index.set(`${entry.paths.criesDir}/${def.species_id}`, { entry, form: rawForm });
+        }
+      }
+    }
+  }
+
+  return index;
+};
+
+// Pick decoys that are not the answer. Easy and normal avoid the answer's known
+// similar cries. Hard mode follows that table directly, including alternate
+// forms, then falls back to random entries when needed.
+const pickDecoyPokemon = (answer: Pokemon, count: number, mode: Difficulty): Pokemon[] => {
+  const seenIds = new Set([answer.species_id]);
+  const decoys: Pokemon[] = [];
+
+  if (mode !== 'hard') {
+    for (const speciesId of similarSpeciesIds(answer)) {
+      seenIds.add(speciesId);
+    }
+  }
+
+  if (mode === 'hard') {
+    const answerIndex = cryKeyIndex.get(cryKeyForPokemon(answer))!;
+    const cryEntries = buildCryEntryIndex();
+
+    for (const neighborIndex of crySimilarity[answerIndex]) {
+      const neighbor = cryEntries.get(cryKeys[neighborIndex])!;
+      if (seenIds.has(neighbor.entry.def.species_id)) {
+        continue;
+      }
+      seenIds.add(neighbor.entry.def.species_id);
+      decoys.push(resolvePokemon(neighbor.entry, neighbor.form));
+      if (decoys.length === count) {
+        break;
+      }
+    }
+  }
 
   while (decoys.length < count) {
-    const candidate = randomFromLists(allPokemon, false);
-    if (!seenIds.has(candidate.def.species_id)) {
-      seenIds.add(candidate.def.species_id);
+    const candidate = resolvePokemon(randomFromLists(allPokemon, false));
+    if (!seenIds.has(candidate.species_id)) {
+      seenIds.add(candidate.species_id);
       decoys.push(candidate);
     }
   }
@@ -423,14 +501,22 @@ const nextRound = (): void => {
   clearEndScreenTimers();
   endScreenElement.replaceChildren();
 
+  const count = optionCount();
+  setOptionVisibility(count);
   thePokemon = resolvePokemon(randomFromLists(pokemonLeft, true));
-  let roundPokemons = pickDecoyPokemon(thePokemon.species_id, 3).map((entry) =>
-    resolvePokemon(entry),
-  );
+  let roundPokemons = pickDecoyPokemon(thePokemon, count - 1, difficulty);
   roundPokemons.push(thePokemon);
   roundPokemons = shuffle(roundPokemons);
   for (let i = 0, len = optionElements.length; i < len; i++) {
     const optionElement = optionElements[i];
+    if (i >= count) {
+      optionElement.dataset.speciesId = '';
+      optionElement.textContent = '';
+      optionElement.disabled = true;
+      optionElement.classList.remove('right');
+      continue;
+    }
+
     const pokemon = roundPokemons[i];
     optionElement.dataset.speciesId = pokemon.species_id;
     optionElement.textContent = displayName(pokemon);
@@ -562,6 +648,7 @@ const showEmptyState = (): void => {
   setHidden(playElement, false);
   playElement.disabled = true;
   setHidden(optionsElement, false);
+  setOptionVisibility(optionCount());
   setHidden(successElement, true);
   setHidden(failureElement, true);
   fillerElement.textContent = 'Select at least one generation';
@@ -588,6 +675,13 @@ const updateGenerationButtons = (): void => {
   const allState =
     enabledCount === Object.keys(gens).length ? 'true' : enabledCount === 0 ? 'false' : 'mixed';
   allGensElement.setAttribute('aria-pressed', allState);
+};
+
+const updateDifficultyButtons = (): void => {
+  for (let i = 0, len = difficultyElements.length; i < len; i++) {
+    const element = difficultyElements[i];
+    element.setAttribute('aria-pressed', String(element.dataset.difficulty === difficulty));
+  }
 };
 
 const refreshGame = (): void => {
@@ -636,7 +730,21 @@ allGensElement.addEventListener('click', () => {
   refreshGame();
 });
 
+for (let i = 0, len = difficultyElements.length; i < len; i++) {
+  const element = difficultyElements[i];
+  element.addEventListener('click', () => {
+    const next = element.dataset.difficulty as Difficulty | undefined;
+    if (!next || next === difficulty) {
+      return;
+    }
+    difficulty = next;
+    updateDifficultyButtons();
+    resetGame();
+  });
+}
+
 updateGenerationButtons();
+updateDifficultyButtons();
 
 // Called when the user clicks on one of the guesses.
 optionsElement.addEventListener('click', (event) => {
@@ -660,6 +768,7 @@ const testWindow = window as unknown as {
     nextRound: () => void;
     resolvePokemon: (entry: PokemonEntry) => Pokemon;
     displayName: (pokemon: PokemonDef) => string;
+    pickDecoyPokemon: (answer: Pokemon, count: number, mode: Difficulty) => Pokemon[];
     setPokemonLeft: (lists: PokemonEntry[][]) => void;
     getGeneration: (generation: Generation) => PokemonDef[];
   };
@@ -670,6 +779,7 @@ if (testWindow.__POKECRY_TEST__) {
     nextRound,
     resolvePokemon,
     displayName,
+    pickDecoyPokemon,
     setPokemonLeft: (lists) => {
       pokemonLeft = lists;
     },

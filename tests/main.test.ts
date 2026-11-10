@@ -56,6 +56,10 @@ const playAgainButton = (): HTMLButtonElement =>
   document.querySelector<HTMLButtonElement>('.play-again')!;
 const generationButtons = (): HTMLButtonElement[] =>
   Array.from(document.querySelectorAll<HTMLButtonElement>('.gen[data-gen]'));
+const difficultyButton = (name: string): HTMLButtonElement =>
+  document.querySelector<HTMLButtonElement>(`.difficulty[data-difficulty="${name}"]`)!;
+const visibleOptions = (): HTMLButtonElement[] =>
+  options().filter((option) => !option.classList.contains('hidden'));
 const filler = (): HTMLHeadingElement => document.querySelector<HTMLHeadingElement>('.filler')!;
 
 type PokemonWithForms = {
@@ -149,6 +153,8 @@ const start = async (): Promise<void> => {
   // These are classic scripts, not modules; load them for their side effects.
   // @ts-expect-error -- classic script
   await import('../src/pokemon');
+  // @ts-expect-error -- classic script
+  await import('../src/cry-similarity');
   vi.stubGlobal('pokemon', (window as unknown as { pokemon: unknown }).pokemon);
   // @ts-expect-error -- classic script
   await import('../src/main');
@@ -686,6 +692,142 @@ describe('pokecry', () => {
     expect(remaining().textContent).toBe('0 left');
   });
 
+  it('has same-generation cry neighbors for hard mode', async () => {
+    await start();
+
+    const keys = (window as unknown as { cryKeys: string[] }).cryKeys;
+    const map = (window as unknown as { crySimilarity: number[][] }).crySimilarity;
+    const pikachu = keys.indexOf('legacy/25');
+    const finizen = keys.indexOf('latest/963');
+    const palafin = keys.indexOf('latest/964');
+
+    expect(keys).toHaveLength(1184);
+    expect(keys).toContain('latest/25-original-cap');
+    expect(keys).toContain('latest/19-alola');
+    expect(map[pikachu].length).toBeGreaterThan(0);
+    expect(map[pikachu]).not.toContain(pikachu);
+    expect(
+      map[pikachu].some((index) => (keys[index].split('/').pop() ?? '').startsWith('25-')),
+    ).toBe(false);
+    expect(map[finizen]).not.toContain(palafin);
+  });
+
+  it('uses similar cries for hard decoys', async () => {
+    (window as unknown as { __POKECRY_TEST__: boolean }).__POKECRY_TEST__ = true;
+    await start();
+    difficultyButton('hard').click();
+
+    const hooks = (
+      window as unknown as {
+        __pokecryTest: {
+          nextRound: () => void;
+          getGeneration: (generation: number) => PokemonWithForms[];
+          setPokemonLeft: (lists: unknown[]) => void;
+        };
+      }
+    ).__pokecryTest;
+    const pikachu = hooks.getGeneration(1).find((pokemon) => pokemon.identifier === 'pikachu')!;
+    hooks.setPokemonLeft([[{ def: pikachu, paths: { spritesDir: 'yellow', criesDir: 'legacy' } }]]);
+
+    const keys = (window as unknown as { cryKeys: string[] }).cryKeys;
+    const similar = (window as unknown as { crySimilarity: number[][] }).crySimilarity;
+    const pikachuKey = keys.indexOf('legacy/25');
+    const sameSpeciesKey = pikachuKey;
+    const originalNeighbors = [...similar[pikachuKey]];
+    similar[pikachuKey] = [sameSpeciesKey, ...originalNeighbors];
+
+    hooks.nextRound();
+
+    const expected = new Set([
+      '25',
+      ...originalNeighbors
+        .slice(0, 3)
+        .map((index) => (keys[index].split('/').pop() ?? '').match(/^(\d+)/)?.[1] ?? ''),
+    ]);
+    expect(new Set(options().map((option) => option.dataset.speciesId))).toEqual(expected);
+  });
+
+  it('avoids similar cries for easy and normal decoys', async () => {
+    (window as unknown as { __POKECRY_TEST__: boolean }).__POKECRY_TEST__ = true;
+    await start();
+
+    const hooks = (
+      window as unknown as {
+        __pokecryTest: {
+          resolvePokemon: (entry: unknown) => { species_id: string; cry: string };
+          pickDecoyPokemon: (
+            answer: unknown,
+            count: number,
+            mode: string,
+          ) => { species_id: string }[];
+          getGeneration: (generation: number) => PokemonWithForms[];
+        };
+      }
+    ).__pokecryTest;
+
+    const keys = (window as unknown as { cryKeys: string[] }).cryKeys;
+    const similar = (window as unknown as { crySimilarity: number[][] }).crySimilarity;
+    const candidates = hooks.getGeneration(1);
+    const pikachu = candidates.find((pokemon) => pokemon.identifier === 'pikachu')!;
+    const random = vi.spyOn(Math, 'random');
+    random.mockReturnValueOnce(0);
+    const answer = hooks.resolvePokemon({
+      def: pikachu,
+      paths: { spritesDir: 'yellow', criesDir: 'legacy' },
+      generation: 1,
+    });
+
+    const pikachuKey = keys.indexOf('legacy/25');
+    similar[pikachuKey] = [keys.indexOf('legacy/1')];
+    const indexValue = (index: number): number => (index + 0.1) / candidates.length;
+    const queue = (indexes: number[]): void => {
+      for (const index of indexes) {
+        random.mockReturnValueOnce(0);
+        random.mockReturnValueOnce(indexValue(index));
+        random.mockReturnValueOnce(0);
+      }
+    };
+
+    queue([0, 1]);
+    expect(hooks.pickDecoyPokemon(answer, 1, 'easy').map((pokemon) => pokemon.species_id)).toEqual([
+      candidates[1].species_id,
+    ]);
+
+    queue([0, 1, 2, 3]);
+    expect(
+      hooks.pickDecoyPokemon(answer, 3, 'normal').map((pokemon) => pokemon.species_id),
+    ).toEqual(candidates.slice(1, 4).map((pokemon) => pokemon.species_id));
+  });
+
+  it('changes difficulty and restarts the game', async () => {
+    await start();
+
+    expect(difficultyButton('normal').getAttribute('aria-pressed')).toBe('true');
+    expect(visibleOptions()).toHaveLength(4);
+
+    guessWrong();
+    advanceRound();
+    expect(score().textContent).toBe('0 / 1');
+
+    difficultyButton('easy').click();
+    expect(difficultyButton('easy').getAttribute('aria-pressed')).toBe('true');
+    expect(visibleOptions()).toHaveLength(2);
+    expect(score().textContent?.trim()).toBe('');
+    expect(status().textContent).toBe('');
+    expect(endScreen().classList.contains('hidden')).toBe(true);
+    expect(visibleOptions().every((option) => !option.disabled)).toBe(true);
+    expect(new Set(visibleOptions().map((option) => option.dataset.speciesId)).size).toBe(2);
+
+    difficultyButton('hard').click();
+    expect(visibleOptions()).toHaveLength(4);
+
+    difficultyButton('normal').click();
+    expect(visibleOptions()).toHaveLength(4);
+
+    difficultyButton('normal').click();
+    expect(visibleOptions()).toHaveLength(4);
+  });
+
   it('selects and unselects all generations', async () => {
     await start();
     expect(allGens().getAttribute('aria-pressed')).toBe('mixed');
@@ -871,6 +1013,8 @@ describe('pokecry', () => {
       }
     ).__pokecryTest;
 
+    difficultyButton('hard').click();
+    document.querySelector<HTMLButtonElement>('.gen-1')!.click();
     document.querySelector<HTMLButtonElement>('.gen-7')!.click();
 
     const graveler = hooks.getGeneration(7).find((pokemon) => pokemon.identifier === 'graveler')!;

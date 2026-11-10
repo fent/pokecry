@@ -133,11 +133,24 @@
           all
         </button>
       </div>
+      <div class="difficulties-title" id="difficulty-title">difficulty</div>
+      <div class="difficulties" role="group" aria-labelledby="difficulty-title">
+        <button class="difficulty" type="button" data-difficulty="easy" aria-pressed="false">
+          easy
+        </button>
+        <button class="difficulty" type="button" data-difficulty="normal" aria-pressed="true">
+          normal
+        </button>
+        <button class="difficulty" type="button" data-difficulty="hard" aria-pressed="false">
+          hard
+        </button>
+      </div>
       <button class="end-game hidden" type="button">end game</button>
     </div>
     <div class="end-screen hidden"></div>
     <noscript>This game needs JavaScript to run.</noscript>
     <script src="pokemon.js"></script>
+    <script src="cry-similarity.js"></script>
     <script src="main.js"></script>
   </body>
 </html>
