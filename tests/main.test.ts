@@ -50,6 +50,9 @@ const endScreen = (): HTMLDivElement => document.querySelector<HTMLDivElement>('
 const score = (): HTMLSpanElement => document.querySelector<HTMLSpanElement>('.score')!;
 const remaining = (): HTMLSpanElement => document.querySelector<HTMLSpanElement>('.remaining')!;
 const status = (): HTMLParagraphElement => document.querySelector<HTMLParagraphElement>('.status')!;
+const failure = (): HTMLHeadingElement => document.querySelector<HTMLHeadingElement>('.failure')!;
+const answerName = (): HTMLParagraphElement =>
+  document.querySelector<HTMLParagraphElement>('.answer-name')!;
 const allGens = (): HTMLButtonElement => document.querySelector<HTMLButtonElement>('.gen-all')!;
 const endGame = (): HTMLButtonElement => document.querySelector<HTMLButtonElement>('.end-game')!;
 const playAgainButton = (): HTMLButtonElement =>
@@ -58,8 +61,34 @@ const generationButtons = (): HTMLButtonElement[] =>
   Array.from(document.querySelectorAll<HTMLButtonElement>('.gen[data-gen]'));
 const difficultyButton = (name: string): HTMLButtonElement =>
   document.querySelector<HTMLButtonElement>(`.difficulty[data-difficulty="${name}"]`)!;
+const expertInput = (): HTMLInputElement =>
+  document.querySelector<HTMLInputElement>('.expert-input')!;
+const expertList = (): HTMLUListElement =>
+  document.querySelector<HTMLUListElement>('.expert-list')!;
+const expertOptions = (): HTMLButtonElement[] =>
+  Array.from(document.querySelectorAll<HTMLButtonElement>('.expert-option'));
 const visibleOptions = (): HTMLButtonElement[] =>
   options().filter((option) => !option.classList.contains('hidden'));
+
+const typeExpert = (query: string): void => {
+  expertInput().value = query;
+  expertInput().dispatchEvent(new Event('input'));
+};
+
+const openExpertList = (query = ''): void => {
+  expertInput().dispatchEvent(new Event('focus'));
+  typeExpert(query);
+};
+
+const selectExpert = (speciesId: string): void => {
+  openExpertList();
+  const option = expertOptions().find((candidate) => candidate.dataset.speciesId === speciesId);
+  if (!option) {
+    throw new Error(`No expert option found for ${speciesId}`);
+  }
+  option.click();
+};
+
 const filler = (): HTMLHeadingElement => document.querySelector<HTMLHeadingElement>('.filler')!;
 
 type PokemonWithForms = {
@@ -185,6 +214,7 @@ const loadStyles = (): void => {
 beforeEach(() => {
   vi.useFakeTimers();
   vi.stubGlobal('Audio', FakeAudio);
+  Element.prototype.scrollIntoView = vi.fn();
   document.body.innerHTML = bodyHtml;
   audios = [];
   vi.resetModules();
@@ -826,6 +856,170 @@ describe('pokecry', () => {
 
     difficultyButton('normal').click();
     expect(visibleOptions()).toHaveLength(4);
+  });
+
+  it('offers an expert dropdown with every species and fuzzy matching', async () => {
+    await start();
+    allGens().click();
+    difficultyButton('expert').click();
+
+    expect(difficultyButton('expert').getAttribute('aria-pressed')).toBe('true');
+    expect(document.querySelector('.options')?.classList.contains('hidden')).toBe(true);
+    expect(document.querySelector('.expert')?.classList.contains('hidden')).toBe(false);
+    expect(expertInput().disabled).toBe(false);
+    expect(expertList().classList.contains('hidden')).toBe(true);
+
+    openExpertList();
+    const allSpecies = new Set(
+      Object.values((window as unknown as { pokemon: Record<string, PokemonWithForms[]> }).pokemon)
+        .flat()
+        .map((pokemon) => pokemon.species_id),
+    );
+    expect(expertOptions()).toHaveLength(allSpecies.size);
+    expect(new Set(expertOptions().map((option) => option.dataset.speciesId)).size).toBe(
+      allSpecies.size,
+    );
+    expect(expertList().classList.contains('hidden')).toBe(false);
+    expertInput().click();
+    expect(expertList().classList.contains('hidden')).toBe(false);
+
+    typeExpert('pikachu');
+    expect(expertOptions()).toHaveLength(1);
+    expect(expertOptions()[0].dataset.speciesId).toBe('25');
+    typeExpert('pika');
+    expect(expertOptions()[0].dataset.speciesId).toBe('25');
+    typeExpert('chu');
+    expect(expertOptions()[0].dataset.speciesId).toBe('172');
+    typeExpert('pikchu');
+    expect(expertOptions()[0].dataset.speciesId).toBe('25');
+    typeExpert('pikachx');
+    expect(expertOptions()[0].dataset.speciesId).toBe('25');
+    typeExpert('nidoran\u2640');
+    expect(expertOptions()[0].dataset.speciesId).toBe('29');
+    typeExpert('mrmime');
+    expect(expertOptions()[0].dataset.speciesId).toBe('122');
+    typeExpert('alolanvulpix');
+    expect(expertOptions()[0].dataset.speciesId).toBe('37');
+    typeExpert('alolan vulpix');
+    expect(expertOptions()[0].dataset.speciesId).toBe('37');
+
+    typeExpert('zzzzzzzzzzzzzzzz');
+    expect(expertOptions()).toHaveLength(0);
+    expect(expertList().classList.contains('hidden')).toBe(true);
+    expect(expertInput().getAttribute('aria-expanded')).toBe('false');
+    expertInput().dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+    expect(expertOptions()).toHaveLength(0);
+
+    openExpertList();
+    document.body.click();
+    expect(expertList().classList.contains('hidden')).toBe(true);
+
+    difficultyButton('normal').click();
+    expect(document.querySelector('.options')?.classList.contains('hidden')).toBe(false);
+    expect(document.querySelector('.expert')?.classList.contains('hidden')).toBe(true);
+    expect(expertInput().disabled).toBe(true);
+  });
+
+  it('accepts correct and wrong expert guesses and resets the next round', async () => {
+    await start();
+    difficultyButton('expert').click();
+
+    expect(expertInput().disabled).toBe(false);
+    selectExpert(currentSpeciesId());
+
+    expect(score().textContent).toBe('1 / 1');
+    expect(expertInput().disabled).toBe(true);
+    expect(expertList().classList.contains('hidden')).toBe(true);
+    expect(sprite().classList.contains('hidden')).toBe(false);
+    expect(answerName().classList.contains('hidden')).toBe(true);
+
+    advanceRound();
+
+    expect(expertInput().disabled).toBe(false);
+    expect(expertInput().value).toBe('');
+    expect(expertList().classList.contains('hidden')).toBe(true);
+    expect(document.activeElement).toBe(expertInput());
+    openExpertList();
+    expertOptions()
+      .find((option) => option.dataset.speciesId !== currentSpeciesId())!
+      .click();
+
+    expect(score().textContent).toBe('1 / 2');
+    expect(status().textContent).toContain('Wrong. The answer was');
+    expect(failure().classList.contains('hidden')).toBe(false);
+    expect(answerName().classList.contains('hidden')).toBe(false);
+    expect(answerName().textContent).toBe(sprite().alt);
+    expect(failure().textContent).not.toContain(sprite().alt);
+
+    advanceRound();
+    expect(answerName().classList.contains('hidden')).toBe(true);
+  });
+
+  it('closes the expert dropdown when tabbing away', async () => {
+    await start();
+    difficultyButton('expert').click();
+    openExpertList('pikchu');
+
+    expect(expertOptions().length).toBeGreaterThan(0);
+    expect(expertOptions().every((option) => option.tabIndex === -1)).toBe(true);
+
+    expertInput().dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', cancelable: true }));
+    expect(expertList().classList.contains('hidden')).toBe(true);
+
+    openExpertList('pikchu');
+    expertInput().dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, cancelable: true }),
+    );
+    expect(expertList().classList.contains('hidden')).toBe(true);
+  });
+
+  it('supports keyboard navigation in the expert dropdown', async () => {
+    await start();
+    difficultyButton('expert').click();
+
+    expertInput().dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+    expect(expertInput().getAttribute('aria-activedescendant')).toBe('expert-option-0');
+    expect(expertOptions()[0].getAttribute('aria-selected')).toBe('true');
+    expect(Element.prototype.scrollIntoView).toHaveBeenCalled();
+
+    expertInput().dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
+    expect(expertInput().getAttribute('aria-activedescendant')).toBe(
+      `expert-option-${expertOptions().length - 1}`,
+    );
+    expect(expertOptions()[expertOptions().length - 1].getAttribute('aria-selected')).toBe('true');
+
+    expertInput().dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    expect(expertList().classList.contains('hidden')).toBe(true);
+
+    expertInput().dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
+    expect(expertInput().getAttribute('aria-activedescendant')).toBe(
+      `expert-option-${expertOptions().length - 1}`,
+    );
+    expertInput().dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+
+    expertInput().dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+    expect(expertInput().disabled).toBe(false);
+    expertInput().dispatchEvent(new KeyboardEvent('keydown', { key: 'a' }));
+    expect(expertInput().disabled).toBe(false);
+
+    typeExpert('pikchu');
+    expertInput().dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+    expertInput().dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', cancelable: true }));
+
+    expect(expertInput().disabled).toBe(true);
+    expect(score().textContent).toMatch(/^[01] \/ 1$/);
+  });
+
+  it('keeps option labels when changing from expert with no generations', async () => {
+    await start();
+    difficultyButton('expert').click();
+    allGens().click();
+    allGens().click();
+
+    difficultyButton('hard').click();
+
+    expect(visibleOptions()).toHaveLength(4);
+    expect(visibleOptions().every((option) => option.textContent)).toBe(true);
   });
 
   it('selects and unselects all generations', async () => {

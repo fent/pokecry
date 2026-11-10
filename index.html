@@ -25,11 +25,28 @@
         <button class="play" type="button" aria-label="Play the Pokemon cry">▶</button>
         <img class="pokemon-sprite hidden" alt="Mystery Pokemon" />
       </div>
+      <p class="answer-name hidden"></p>
       <div class="options">
         <button class="option" type="button"></button>
         <button class="option" type="button"></button>
         <button class="option" type="button"></button>
         <button class="option" type="button"></button>
+      </div>
+      <div class="expert hidden">
+        <label class="sr-only" for="expert-input">Pokemon name</label>
+        <input
+          class="expert-input"
+          id="expert-input"
+          type="text"
+          autocomplete="off"
+          placeholder="type a pokemon name"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-haspopup="listbox"
+          aria-expanded="false"
+          aria-controls="expert-list"
+        />
+        <ul class="expert-list hidden" id="expert-list" role="listbox"></ul>
       </div>
       <div class="gens-title" id="gens-title">gens</div>
       <div class="gens" role="group" aria-labelledby="gens-title">
@@ -143,6 +160,9 @@
         </button>
         <button class="difficulty" type="button" data-difficulty="hard" aria-pressed="false">
           hard
+        </button>
+        <button class="difficulty" type="button" data-difficulty="expert" aria-pressed="false">
+          expert
         </button>
       </div>
       <button class="end-game hidden" type="button">end game</button>

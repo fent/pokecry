@@ -1,9 +1,11 @@
 const REVEAL_TIMEOUT = 1200;
 const END_REVEAL_TIMEOUT = 50;
+const MIN_FUZZY_SCORE = 240;
+const FUZZY_SCORE_WINDOW = 100;
 const VOLUME = 0.5;
 
 type Generation = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
-type Difficulty = 'easy' | 'normal' | 'hard';
+type Difficulty = 'easy' | 'normal' | 'hard' | 'expert';
 
 interface GenerationPaths {
   spritesDir: string;
@@ -17,6 +19,12 @@ interface GenerationConfig extends GenerationPaths {
 interface PokemonEntry {
   def: PokemonDef;
   paths: GenerationPaths;
+}
+
+interface ExpertPokemon {
+  speciesId: string;
+  name: string;
+  search: string;
 }
 
 interface GenData extends GenerationConfig {
@@ -225,9 +233,13 @@ let totalGuesses = 0;
 let correctGuesses = 0;
 let showRemaining = false;
 let restorePlayFocus = false;
+let restoreExpertFocus = false;
 let roundActive = false;
 let revealTimer: number | undefined;
 let showingEmptyState = false;
+let expertChoices: ExpertPokemon[] = [];
+let expertActiveIndex = -1;
+let suppressExpertOpen = false;
 const endScreenTimers: number[] = [];
 const guessedPokemon: { pokemon: Pokemon; correct: boolean }[] = [];
 
@@ -240,6 +252,9 @@ const requireElement = <T extends Element>(selector: string): T => {
 };
 
 const optionsElement = requireElement<HTMLDivElement>('.options');
+const expertElement = requireElement<HTMLDivElement>('.expert');
+const expertInput = requireElement<HTMLInputElement>('.expert-input');
+const expertList = requireElement<HTMLUListElement>('.expert-list');
 const optionElements = document.querySelectorAll<HTMLButtonElement>('.option');
 const genElements = document.querySelectorAll<HTMLButtonElement>('.gen[data-gen]');
 const allGensElement = requireElement<HTMLButtonElement>('.gen-all');
@@ -251,6 +266,7 @@ const fillerElement = requireElement<HTMLHeadingElement>('.filler');
 const scoreElement = requireElement<HTMLSpanElement>('.score');
 const remainingElement = requireElement<HTMLSpanElement>('.remaining');
 const spriteElement = requireElement<HTMLImageElement>('.pokemon-sprite');
+const answerNameElement = requireElement<HTMLParagraphElement>('.answer-name');
 const playElement = requireElement<HTMLButtonElement>('.play');
 const endGameElement = requireElement<HTMLButtonElement>('.end-game');
 const statusElement = requireElement<HTMLParagraphElement>('.status');
@@ -311,10 +327,261 @@ const formLabel = (form: string): string =>
     .map((word) => regionFormNames[word] ?? word)
     .join(' ');
 
+const speciesName = (pokemon: PokemonDef): string => pokemon.name || pokemon.identifier;
+
 const displayName = (pokemon: PokemonDef): string => {
-  const name = pokemon.name || pokemon.identifier;
+  const name = speciesName(pokemon);
   return pokemon.form ? `${name} (${formLabel(pokemon.form)})` : name;
 };
+
+const normalizeSearch = (value: string): string =>
+  value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/♀/g, 'female')
+    .replace(/♂/g, 'male')
+    .replace(/[^a-z0-9]/g, '');
+
+const editDistance = (left: string, right: string): number => {
+  const previous = Array.from({ length: right.length + 1 }, (_, index) => index);
+
+  for (let leftIndex = 1; leftIndex <= left.length; leftIndex++) {
+    let diagonal = previous[0];
+    previous[0] = leftIndex;
+
+    for (let rightIndex = 1; rightIndex <= right.length; rightIndex++) {
+      const above = previous[rightIndex];
+      previous[rightIndex] = Math.min(
+        previous[rightIndex] + 1,
+        previous[rightIndex - 1] + 1,
+        diagonal + (left[leftIndex - 1] === right[rightIndex - 1] ? 0 : 1),
+      );
+      diagonal = above;
+    }
+  }
+
+  return previous[right.length];
+};
+
+// Rank exact, prefix, substring, and subsequence matches above edit-distance
+// matches. This keeps common typos visible without hiding close names.
+const fuzzyScore = (query: string, target: string): number => {
+  const normalizedQuery = normalizeSearch(query);
+  if (!normalizedQuery) {
+    return 0;
+  }
+
+  const normalizedTarget = normalizeSearch(target);
+  if (normalizedQuery === normalizedTarget) {
+    return 1000;
+  }
+  if (normalizedTarget.startsWith(normalizedQuery)) {
+    return 800 - Math.min(normalizedTarget.length - normalizedQuery.length, 100);
+  }
+
+  const substringIndex = normalizedTarget.indexOf(normalizedQuery);
+  if (substringIndex >= 0) {
+    return 600 - substringIndex;
+  }
+
+  let queryIndex = 0;
+  const matchedIndexes: number[] = [];
+  for (
+    let targetIndex = 0;
+    targetIndex < normalizedTarget.length && queryIndex < normalizedQuery.length;
+    targetIndex++
+  ) {
+    if (normalizedTarget[targetIndex] === normalizedQuery[queryIndex]) {
+      matchedIndexes.push(targetIndex);
+      queryIndex++;
+    }
+  }
+  if (queryIndex === normalizedQuery.length) {
+    const span = matchedIndexes[matchedIndexes.length - 1] - matchedIndexes[0];
+    return 400 - (span - (normalizedQuery.length - 1));
+  }
+
+  return 300 - editDistance(normalizedQuery, normalizedTarget) * 20;
+};
+
+const getAvailableSpecies = (): ExpertPokemon[] => {
+  const species = new Map<string, ExpertPokemon>();
+
+  for (const list of allPokemon) {
+    for (const entry of list) {
+      const def = entry.def;
+      let option = species.get(def.species_id);
+      if (!option) {
+        const name = speciesName(def);
+        option = { speciesId: def.species_id, name, search: name };
+        species.set(def.species_id, option);
+      }
+
+      for (const rawForm of def.forms ?? []) {
+        if (rawForm.startsWith('!')) {
+          continue;
+        }
+        const form = formLabel(rawForm.replace(/^@/, ''));
+        // Include both "vulpix alolan" and "alolan vulpix" search orders.
+        option.search += ` ${form} ${option.name}`;
+      }
+    }
+  }
+
+  return [...species.values()].sort((left, right) => left.name.localeCompare(right.name));
+};
+
+const getExpertOptions = (): NodeListOf<HTMLButtonElement> =>
+  expertList.querySelectorAll<HTMLButtonElement>('.expert-option');
+
+const clearExpertSelection = (): void => {
+  expertActiveIndex = -1;
+  expertInput.removeAttribute('aria-activedescendant');
+};
+
+const closeExpertList = (): void => {
+  clearExpertSelection();
+  setHidden(expertList, true);
+  expertList.replaceChildren();
+  expertInput.setAttribute('aria-expanded', 'false');
+};
+
+const setExpertMode = (active: boolean): void => {
+  setHidden(optionsElement, active);
+  setHidden(expertElement, !active);
+  closeExpertList();
+  expertInput.disabled = !active;
+  if (active) {
+    expertChoices = getAvailableSpecies();
+    expertInput.value = '';
+  }
+};
+
+const chooseExpertOption = (option: HTMLButtonElement): void => {
+  restoreExpertFocus = true;
+  expertInput.value = option.textContent!;
+  closeExpertList();
+  submitGuess(option.dataset.speciesId!);
+};
+
+const setActiveExpertOption = (index: number): void => {
+  const options = getExpertOptions();
+  expertActiveIndex = (index + options.length) % options.length;
+  for (let i = 0; i < options.length; i++) {
+    const active = i === expertActiveIndex;
+    options[i].classList.toggle('active', active);
+    options[i].setAttribute('aria-selected', String(active));
+  }
+  expertInput.setAttribute('aria-activedescendant', options[expertActiveIndex].id);
+  options[expertActiveIndex].scrollIntoView({ block: 'nearest' });
+};
+
+const moveExpertSelection = (step: number): void => {
+  const options = getExpertOptions();
+  if (options.length === 0) {
+    return;
+  }
+
+  const baseIndex = expertActiveIndex < 0 ? (step > 0 ? -1 : 0) : expertActiveIndex;
+  setActiveExpertOption(baseIndex + step);
+};
+
+const renderExpertOptions = (): void => {
+  const query = expertInput.value;
+  const hasQuery = normalizeSearch(query).length > 0;
+  const scored = expertChoices
+    .map((pokemon) => ({
+      pokemon,
+      score: Math.max(fuzzyScore(query, pokemon.name), fuzzyScore(query, pokemon.search)),
+    }))
+    .sort(
+      (left, right) =>
+        right.score - left.score || left.pokemon.name.localeCompare(right.pokemon.name),
+    );
+  const topScore = scored[0].score;
+  const minimumScore = Math.max(MIN_FUZZY_SCORE, topScore - FUZZY_SCORE_WINDOW);
+  const ranked = scored
+    .filter(({ score }) => !hasQuery || score >= minimumScore)
+    .map(({ pokemon }) => pokemon);
+
+  clearExpertSelection();
+  expertList.replaceChildren();
+  for (let index = 0; index < ranked.length; index++) {
+    const pokemon = ranked[index];
+    const item = document.createElement('li');
+    item.setAttribute('role', 'presentation');
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'expert-option';
+    button.id = `expert-option-${index}`;
+    button.tabIndex = -1;
+    button.dataset.speciesId = pokemon.speciesId;
+    button.setAttribute('role', 'option');
+    button.setAttribute('aria-selected', 'false');
+    button.textContent = pokemon.name;
+    button.addEventListener('click', () => chooseExpertOption(button));
+    item.appendChild(button);
+    expertList.appendChild(item);
+  }
+
+  setHidden(expertList, ranked.length === 0);
+  expertInput.setAttribute('aria-expanded', String(ranked.length > 0));
+};
+
+const focusExpertInput = (): void => {
+  suppressExpertOpen = true;
+  expertInput.focus();
+  suppressExpertOpen = false;
+};
+
+expertInput.addEventListener('focus', () => {
+  if (!suppressExpertOpen) {
+    renderExpertOptions();
+  }
+});
+expertInput.addEventListener('click', renderExpertOptions);
+expertInput.addEventListener('input', renderExpertOptions);
+expertInput.addEventListener('keydown', (event) => {
+  if (event.key === 'Tab') {
+    closeExpertList();
+    return;
+  }
+
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    closeExpertList();
+    return;
+  }
+
+  if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+    event.preventDefault();
+    if (expertList.children.length === 0) {
+      renderExpertOptions();
+    }
+    moveExpertSelection(event.key === 'ArrowDown' ? 1 : -1);
+    return;
+  }
+
+  if (event.key !== 'Enter') {
+    return;
+  }
+
+  const options = getExpertOptions();
+  const selected = expertActiveIndex >= 0 ? options[expertActiveIndex] : options[0];
+  if (!selected) {
+    return;
+  }
+
+  event.preventDefault();
+  selected.click();
+});
+
+document.addEventListener('click', (event) => {
+  if (!expertElement.contains(event.target as Node)) {
+    closeExpertList();
+  }
+});
 
 playElement.addEventListener('click', () => {
   theCry.play();
@@ -324,7 +591,12 @@ endGameElement.addEventListener('click', () => {
   displayEndScreen();
 });
 
-const optionCount = (): number => (difficulty === 'easy' ? 2 : 4);
+const optionCount = (): number => {
+  if (difficulty === 'expert') {
+    return 0;
+  }
+  return difficulty === 'easy' ? 2 : 4;
+};
 
 const setOptionVisibility = (count: number): void => {
   for (let i = 0, len = optionElements.length; i < len; i++) {
@@ -433,13 +705,13 @@ let thePokemon: Pokemon;
 let theCry: HTMLAudioElement;
 
 // Called whenever the user guesses on a pokemon.
-const guess = (option: HTMLButtonElement): void => {
+const submitGuess = (speciesId: string, option?: HTMLButtonElement): void => {
   totalGuesses++;
   showRemaining = true;
   roundActive = false;
   updateRemaining();
-  const isCorrect = option.dataset.speciesId === thePokemon.species_id;
-  restorePlayFocus = document.activeElement === option;
+  const isCorrect = speciesId === thePokemon.species_id;
+  restorePlayFocus = option !== undefined && document.activeElement === option;
   if (isCorrect) {
     correctGuesses++;
   }
@@ -449,6 +721,12 @@ const guess = (option: HTMLButtonElement): void => {
   const resultElement = isCorrect ? successElement : failureElement;
   setHidden(successElement, !isCorrect);
   setHidden(failureElement, isCorrect);
+  failureElement.textContent = 'wrong';
+  const revealAnswer = !isCorrect && difficulty === 'expert';
+  setHidden(answerNameElement, !revealAnswer);
+  if (revealAnswer) {
+    answerNameElement.textContent = displayName(thePokemon);
+  }
   scoreElement.textContent = scoreText;
   resultElement.appendChild(scoreElement);
   statusElement.textContent = isCorrect
@@ -466,6 +744,8 @@ const guess = (option: HTMLButtonElement): void => {
       optionElement.classList.add('right');
     }
   }
+  expertInput.disabled = true;
+  closeExpertList();
 
   // Remove the play button and show the pokemon.
   setHidden(playElement, true);
@@ -495,7 +775,9 @@ const nextRound = (): void => {
     showingEmptyState = false;
   }
   setHidden(fillerElement, true);
-  setHidden(optionsElement, false);
+  setHidden(answerNameElement, true);
+  const expert = difficulty === 'expert';
+  setExpertMode(expert);
   setInvisible(resultsElement, false);
   setHidden(endScreenElement, true);
   clearEndScreenTimers();
@@ -504,14 +786,17 @@ const nextRound = (): void => {
   const count = optionCount();
   setOptionVisibility(count);
   thePokemon = resolvePokemon(randomFromLists(pokemonLeft, true));
-  let roundPokemons = pickDecoyPokemon(thePokemon, count - 1, difficulty);
-  roundPokemons.push(thePokemon);
-  roundPokemons = shuffle(roundPokemons);
+  let roundPokemons: Pokemon[] = [];
+  if (count > 0) {
+    roundPokemons = pickDecoyPokemon(thePokemon, count - 1, difficulty);
+    roundPokemons.push(thePokemon);
+    roundPokemons = shuffle(roundPokemons);
+  }
   for (let i = 0, len = optionElements.length; i < len; i++) {
     const optionElement = optionElements[i];
     if (i >= count) {
       optionElement.dataset.speciesId = '';
-      optionElement.textContent = '';
+      // Keep the label so the empty state never reveals blank buttons.
       optionElement.disabled = true;
       optionElement.classList.remove('right');
       continue;
@@ -536,7 +821,10 @@ const nextRound = (): void => {
   });
   setHidden(playElement, false);
   playElement.disabled = false;
-  if (restorePlayFocus) {
+  if (restoreExpertFocus) {
+    restoreExpertFocus = false;
+    focusExpertInput();
+  } else if (restorePlayFocus) {
     playElement.focus();
     restorePlayFocus = false;
   }
@@ -549,6 +837,7 @@ const resetGame = (): void => {
   totalGuesses = 0;
   correctGuesses = 0;
   showRemaining = false;
+  restoreExpertFocus = false;
   guessedPokemon.length = 0;
   for (const gen of Object.values(gens)) {
     gen.pokemonLeft = gen.pokemon.slice();
@@ -647,7 +936,8 @@ const showEmptyState = (): void => {
   setInvisible(resultsElement, false);
   setHidden(playElement, false);
   playElement.disabled = true;
-  setHidden(optionsElement, false);
+  setExpertMode(false);
+  setHidden(answerNameElement, true);
   setOptionVisibility(optionCount());
   setHidden(successElement, true);
   setHidden(failureElement, true);
@@ -758,7 +1048,7 @@ optionsElement.addEventListener('click', (event) => {
     return;
   }
 
-  guess(option);
+  submitGuess(option.dataset.speciesId!, option);
 });
 
 // Test-only hook for defensive branches that the UI cannot reach.

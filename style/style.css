@@ -116,6 +116,13 @@ button {
   height: 110px;
 }
 
+.answer-name {
+  margin: 0 0 1em;
+  color: var(--ink);
+  font-weight: bold;
+  overflow-wrap: anywhere;
+}
+
 .play {
   display: inline-flex;
   align-items: center;
@@ -164,8 +171,69 @@ button {
   cursor: pointer;
 }
 
+.expert {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+  margin: 30px auto 0;
+}
+
+.expert-input {
+  display: block;
+  max-width: 100%;
+  margin: 0;
+  padding: 0.15em 0.9em;
+  border: 1px solid var(--border);
+  border-radius: 30px;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+}
+
+.expert-input::placeholder {
+  color: var(--muted-strong);
+  opacity: 1;
+}
+
+.expert-input:disabled {
+  background: var(--muted);
+  opacity: 1;
+}
+
+.expert-list {
+  position: absolute;
+  z-index: 20;
+  right: 0;
+  left: 0;
+  max-height: 280px;
+  margin: 4px 0 0;
+  padding: 0;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--paper);
+  box-shadow: 0 6px 18px rgb(0 0 0 / 18%);
+  list-style: none;
+  text-align: left;
+}
+
+.expert-option {
+  display: block;
+  width: 100%;
+  padding: 0.15em 0.9em;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
 .option.hidden {
   display: none;
+}
+
+.expert-option.active {
+  color: var(--paper);
+  background: var(--ink);
 }
 
 .option:disabled {
@@ -181,6 +249,7 @@ button {
 
 @media (hover: hover) {
   .option:hover:not(:disabled),
+  .expert-option:hover,
   .gens .gen:hover {
     color: var(--paper);
     background-color: var(--ink);
@@ -188,12 +257,15 @@ button {
 }
 
 .option:active:not(:disabled),
+.expert-option:active,
 .gens .gen:active {
   color: var(--muted-strong);
 }
 
 .play:focus-visible,
 .option:focus-visible,
+.expert-input:focus-visible,
+.expert-option:focus-visible,
 .gen:focus-visible,
 .end-pokemon:focus-visible,
 .end-game:focus-visible,
@@ -457,6 +529,14 @@ button {
 
   .option {
     line-height: 1.5;
+  }
+
+  .expert-input {
+    line-height: 1.5;
+  }
+
+  .expert-list {
+    max-height: 40vh;
   }
 
   .gens-title {
