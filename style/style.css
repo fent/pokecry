@@ -186,7 +186,8 @@ button {
 .option:focus-visible,
 .gen:focus-visible,
 .end-pokemon:focus-visible,
-.end-game:focus-visible {
+.end-game:focus-visible,
+.play-again:focus-visible {
   outline: 3px solid var(--focus);
   outline-offset: 3px;
 }
@@ -294,14 +295,38 @@ button {
   white-space: normal;
 }
 
-.end-summary {
+.end-header {
   position: sticky;
   top: 0;
   z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em 1em;
   margin: 0 0 1em;
   padding: 0.25em 0;
   background: var(--paper);
   color: var(--muted-strong);
+}
+
+.end-summary {
+  margin: 0;
+}
+
+.play-again {
+  padding: 0.15em 1em;
+  border: 1px solid var(--muted-strong);
+  border-radius: 30px;
+  background: transparent;
+  color: var(--muted-strong);
+  font-size: 0.8em;
+  cursor: pointer;
+}
+
+.play-again:hover {
+  color: var(--paper);
+  background: var(--ink);
 }
 
 .end-pokemon {

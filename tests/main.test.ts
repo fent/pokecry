@@ -52,6 +52,8 @@ const remaining = (): HTMLSpanElement => document.querySelector<HTMLSpanElement>
 const status = (): HTMLParagraphElement => document.querySelector<HTMLParagraphElement>('.status')!;
 const allGens = (): HTMLButtonElement => document.querySelector<HTMLButtonElement>('.gen-all')!;
 const endGame = (): HTMLButtonElement => document.querySelector<HTMLButtonElement>('.end-game')!;
+const playAgainButton = (): HTMLButtonElement =>
+  document.querySelector<HTMLButtonElement>('.play-again')!;
 const generationButtons = (): HTMLButtonElement[] =>
   Array.from(document.querySelectorAll<HTMLButtonElement>('.gen[data-gen]'));
 const filler = (): HTMLHeadingElement => document.querySelector<HTMLHeadingElement>('.filler')!;
@@ -880,6 +882,40 @@ describe('pokecry', () => {
     const gravelerOptions = options().filter((option) => option.dataset.speciesId === '75');
     expect(gravelerOptions).toHaveLength(1);
     expect(gravelerOptions[0].textContent).toBe('graveler (alolan)');
+  });
+
+  it('starts a new game from the end screen', async () => {
+    await start();
+    guessWrong();
+    advanceRound();
+    currentAudio().emit('ended');
+    endGame().click();
+
+    expect(playAgainButton()).not.toBeNull();
+    playAgainButton().click();
+
+    expect(endScreen().classList.contains('hidden')).toBe(true);
+    expect(playButton().classList.contains('hidden')).toBe(false);
+    expect(options().every((option) => !option.disabled)).toBe(true);
+    expect(score().textContent?.trim()).toBe('');
+    expect(status().textContent).toBe('');
+
+    guessCorrect();
+    expect(score().textContent).toBe('1 / 1');
+  });
+
+  it('shows the empty state when playing again without generations', async () => {
+    await start();
+    guessWrong();
+    advanceRound();
+    currentAudio().emit('ended');
+    endGame().click();
+
+    document.querySelector<HTMLButtonElement>('.gen-1')!.click();
+    playAgainButton().click();
+
+    expect(filler().textContent).toBe('Select at least one generation');
+    expect(playButton().disabled).toBe(true);
   });
 
   it('continues with a new generation after one is exhausted', async () => {

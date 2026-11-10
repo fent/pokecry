@@ -459,6 +459,34 @@ const nextRound = (): void => {
   updateRemaining();
 };
 
+const resetGame = (): void => {
+  totalGuesses = 0;
+  correctGuesses = 0;
+  showRemaining = false;
+  guessedPokemon.length = 0;
+  for (const gen of Object.values(gens)) {
+    gen.pokemonLeft = gen.pokemon.slice();
+  }
+  updatePokemon();
+  updateRemaining();
+  setInvisible(resultsElement, false);
+  setHidden(successElement, true);
+  setHidden(failureElement, true);
+  scoreElement.textContent = '\u00a0';
+  statusElement.textContent = '';
+  clearEndScreenTimers();
+  endScreenElement.replaceChildren();
+  setHidden(endScreenElement, true);
+
+  if (allPokemon.length === 0) {
+    showEmptyState();
+    return;
+  }
+
+  nextRound();
+  playElement.focus();
+};
+
 const displayEndScreen = (): void => {
   cancelReveal();
   if (showingEmptyState) {
@@ -475,10 +503,21 @@ const displayEndScreen = (): void => {
   endScreenElement.tabIndex = -1;
   endScreenElement.focus({ preventScroll: true });
 
+  const header = document.createElement('div');
+  header.className = 'end-header';
+
   const summary = document.createElement('p');
   summary.className = 'end-summary';
   summary.textContent = `${correctGuesses} correct / ${totalGuesses - correctGuesses} wrong`;
-  endScreenElement.appendChild(summary);
+
+  const playAgain = document.createElement('button');
+  playAgain.type = 'button';
+  playAgain.className = 'play-again';
+  playAgain.textContent = 'play again';
+  playAgain.addEventListener('click', resetGame);
+
+  header.append(summary, playAgain);
+  endScreenElement.appendChild(header);
 
   for (let i = 0, len = guessedPokemon.length; i < len; i++) {
     const { pokemon, correct } = guessedPokemon[i];
