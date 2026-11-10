@@ -8,6 +8,7 @@ interface PokemonDef {
   formSprites?: boolean;
   baseForm?: boolean;
   baseCryDir?: string;
+  form?: string;
 }
 
 interface Pokemon extends PokemonDef {

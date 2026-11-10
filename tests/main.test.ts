@@ -65,6 +65,7 @@ type PokemonWithForms = {
   formSprites?: boolean;
   baseForm?: boolean;
   baseCryDir?: string;
+  form?: string;
 };
 
 const generationAssets: Record<string, [string, string]> = {
@@ -223,7 +224,12 @@ describe('pokecry', () => {
     const hooks = (
       window as unknown as {
         __pokecryTest: {
-          resolvePokemon: (entry: unknown) => { sprite: string; cry: string };
+          resolvePokemon: (entry: unknown) => PokemonWithForms & {
+            sprite: string;
+            cry: string;
+            form?: string;
+          };
+          displayName: (pokemon: PokemonWithForms) => string;
         };
       }
     ).__pokecryTest;
@@ -246,6 +252,8 @@ describe('pokecry', () => {
     const resolved = hooks.resolvePokemon(entry);
     expect(resolved.sprite).toContain('/201-c.png');
     expect(resolved.cry).toContain('/201-c.mp3');
+    expect(resolved.form).toBe('c');
+    expect(hooks.displayName(resolved)).toBe('unown (c)');
 
     random.mockReturnValueOnce(0.99);
     const noFormSprites = hooks.resolvePokemon({
@@ -298,6 +306,15 @@ describe('pokecry', () => {
     });
     expect(formOnly.sprite).toContain('/201-exclamation.png');
     expect(formOnly.cry).toContain('/201.mp3');
+    expect(formOnly.form).toBe('exclamation');
+
+    expect(hooks.displayName({ species_id: '25', identifier: 'pikachu' })).toBe('pikachu');
+    expect(
+      hooks.displayName({ species_id: '25', identifier: 'pikachu', form: 'original-cap' }),
+    ).toBe('pikachu (original cap)');
+    expect(hooks.displayName({ species_id: '19', identifier: 'rattata', form: 'alola' })).toBe(
+      'rattata (alolan)',
+    );
   });
 
   it('excludes mega and gmax forms', async () => {
@@ -836,6 +853,33 @@ describe('pokecry', () => {
     expect(endScreen().classList.contains('hidden')).toBe(false);
     expect(endScreen().querySelectorAll('.end-pokemon')).toHaveLength(1);
     expect(status().textContent).toContain('Wrong');
+  });
+
+  it('never uses another form of the answer species as a decoy', async () => {
+    (window as unknown as { __POKECRY_TEST__: boolean }).__POKECRY_TEST__ = true;
+    await start();
+
+    const hooks = (
+      window as unknown as {
+        __pokecryTest: {
+          nextRound: () => void;
+          getGeneration: (generation: number) => PokemonWithForms[];
+          setPokemonLeft: (lists: unknown[]) => void;
+        };
+      }
+    ).__pokecryTest;
+
+    document.querySelector<HTMLButtonElement>('.gen-7')!.click();
+
+    const graveler = hooks.getGeneration(7).find((pokemon) => pokemon.identifier === 'graveler')!;
+    hooks.setPokemonLeft([
+      [{ def: graveler, paths: { spritesDir: 'sun-moon', criesDir: 'latest' } }],
+    ]);
+    hooks.nextRound();
+
+    const gravelerOptions = options().filter((option) => option.dataset.speciesId === '75');
+    expect(gravelerOptions).toHaveLength(1);
+    expect(gravelerOptions[0].textContent).toBe('graveler (alolan)');
   });
 
   it('continues with a new generation after one is exhausted', async () => {

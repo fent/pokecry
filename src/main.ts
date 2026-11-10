@@ -36,8 +36,9 @@ const resolvePokemon = (entry: PokemonEntry): Pokemon => {
   let spriteId = def.species_id;
   let cryId = def.species_id;
   let cryDir = def.baseCryDir ?? entry.paths.criesDir;
+  let formName: string | undefined;
   if (form) {
-    const formName = form.replace(/^@/, '');
+    formName = form.replace(/^@/, '');
     spriteId += `-${formName}`;
     if (def.formSounds || form.startsWith('@')) {
       cryId += `-${formName}`;
@@ -47,6 +48,7 @@ const resolvePokemon = (entry: PokemonEntry): Pokemon => {
 
   return {
     ...def,
+    form: formName,
     sprite: `media/sprites/${entry.paths.spritesDir}/${spriteId}.png`,
     cry: `media/cries/${cryDir}/${cryId}.mp3`,
   };
@@ -292,7 +294,23 @@ const cancelReveal = (): void => {
   }
 };
 
-const displayName = (pokemon: PokemonDef): string => pokemon.name || pokemon.identifier;
+const regionFormNames: Record<string, string> = {
+  alola: 'alolan',
+  galar: 'galarian',
+  hisui: 'hisuian',
+  paldea: 'paldean',
+};
+
+const formLabel = (form: string): string =>
+  form
+    .split('-')
+    .map((word) => regionFormNames[word] ?? word)
+    .join(' ');
+
+const displayName = (pokemon: PokemonDef): string => {
+  const name = pokemon.name || pokemon.identifier;
+  return pokemon.form ? `${name} (${formLabel(pokemon.form)})` : name;
+};
 
 playElement.addEventListener('click', () => {
   theCry.play();
@@ -406,7 +424,9 @@ const nextRound = (): void => {
   endScreenElement.replaceChildren();
 
   thePokemon = resolvePokemon(randomFromLists(pokemonLeft, true));
-  let roundPokemons = pickDecoyPokemon(thePokemon.species_id, 3).map((entry) => entry.def);
+  let roundPokemons = pickDecoyPokemon(thePokemon.species_id, 3).map((entry) =>
+    resolvePokemon(entry),
+  );
   roundPokemons.push(thePokemon);
   roundPokemons = shuffle(roundPokemons);
   for (let i = 0, len = optionElements.length; i < len; i++) {
@@ -596,6 +616,7 @@ const testWindow = window as unknown as {
   __pokecryTest?: {
     nextRound: () => void;
     resolvePokemon: (entry: PokemonEntry) => Pokemon;
+    displayName: (pokemon: PokemonDef) => string;
     setPokemonLeft: (lists: PokemonEntry[][]) => void;
     getGeneration: (generation: Generation) => PokemonDef[];
   };
@@ -605,6 +626,7 @@ if (testWindow.__POKECRY_TEST__) {
   testWindow.__pokecryTest = {
     nextRound,
     resolvePokemon,
+    displayName,
     setPokemonLeft: (lists) => {
       pokemonLeft = lists;
     },
