@@ -506,6 +506,10 @@ const displayEndScreen = (): void => {
   const header = document.createElement('div');
   header.className = 'end-header';
 
+  const title = document.createElement('h2');
+  title.className = 'end-title';
+  title.textContent = "Who's that Pokemon?";
+
   const summary = document.createElement('p');
   summary.className = 'end-summary';
   summary.textContent = `${correctGuesses} correct / ${totalGuesses - correctGuesses} wrong`;
@@ -516,7 +520,7 @@ const displayEndScreen = (): void => {
   playAgain.textContent = 'play again';
   playAgain.addEventListener('click', resetGame);
 
-  header.append(summary, playAgain);
+  header.append(title, summary, playAgain);
   endScreenElement.appendChild(header);
 
   for (let i = 0, len = guessedPokemon.length; i < len; i++) {

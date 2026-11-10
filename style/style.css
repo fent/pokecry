@@ -170,11 +170,17 @@ button {
   cursor: default;
 }
 
-.option:hover:not(:disabled),
-.gens .gen:hover,
 .gens .gen[aria-pressed='true'] {
   color: var(--paper);
   background-color: var(--ink);
+}
+
+@media (hover: hover) {
+  .option:hover:not(:disabled),
+  .gens .gen:hover {
+    color: var(--paper);
+    background-color: var(--ink);
+  }
 }
 
 .option:active:not(:disabled),
@@ -232,6 +238,7 @@ button {
 
 [data-tooltip]::before,
 [data-tooltip]::after {
+  display: none;
   visibility: hidden;
   opacity: 0;
   pointer-events: none;
@@ -240,7 +247,6 @@ button {
 [data-tooltip]::before {
   z-index: 999;
   content: attr(data-tooltip);
-  display: block;
   position: absolute;
   bottom: 100%;
   left: 50%;
@@ -271,22 +277,25 @@ button {
   line-height: 0;
 }
 
-[data-tooltip]:hover::before,
-[data-tooltip]:hover::after,
-[data-tooltip]:focus-visible::before,
-[data-tooltip]:focus-visible::after {
-  visibility: visible;
-  opacity: 1;
+@media (hover: hover) {
+  [data-tooltip]:hover::before,
+  [data-tooltip]:hover::after,
+  [data-tooltip]:focus-visible::before,
+  [data-tooltip]:focus-visible::after {
+    display: block;
+    visibility: visible;
+    opacity: 1;
+  }
 }
 
 .end-screen {
-  position: absolute;
-  top: 50px;
-  left: 50px;
-  bottom: 0;
-  width: calc(100% - 200px);
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
   /* Room above and to the sides so tooltips aren't clipped by overflow. */
   padding: 3em 5rem 1em;
+  background: var(--paper);
+  text-align: center;
   overflow-y: auto;
 }
 
@@ -308,6 +317,13 @@ button {
   padding: 0.25em 0;
   background: var(--paper);
   color: var(--muted-strong);
+}
+
+.end-title {
+  width: 100%;
+  margin: 0;
+  text-align: center;
+  color: var(--ink);
 }
 
 .end-summary {
@@ -388,41 +404,58 @@ button {
 
 @media (max-width: 720px) {
   body {
-    font-size: 250%;
+    font-size: 160%;
   }
 
   .content {
-    width: 90%;
+    width: min(90%, 420px);
+  }
+
+  .github-ribbon {
+    display: none;
   }
 
   .media {
-    height: 240px;
+    height: 170px;
   }
 
   .play {
-    width: 240px;
-    height: 240px;
-    padding-left: 15px;
-    font-size: 120px;
+    width: 170px;
+    height: 170px;
+    padding-left: 10px;
+    font-size: 85px;
   }
 
   .pokemon-sprite {
-    width: 240px;
-    height: 219px;
+    width: 170px;
+    height: 155px;
   }
 
   .option {
-    line-height: 200%;
+    line-height: 1.5;
   }
 
   .gens-title {
-    margin-top: 60px;
+    margin-top: 30px;
     margin-bottom: 10px;
   }
 
   .gens .gen {
-    width: 92px;
-    border-radius: 10px;
-    line-height: 200%;
+    width: 48px;
+    border-radius: 8px;
+    line-height: 1.8;
+  }
+
+  .gens .gen-all {
+    width: 58px;
+  }
+
+  .end-screen {
+    padding: 2em 1em 1em;
+  }
+
+  .end-screen .pokemon-sprite {
+    width: 80px;
+    height: 73px;
   }
 }
