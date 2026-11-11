@@ -538,6 +538,22 @@ button {
     display: none;
   }
 
+  .results {
+    height: auto;
+    min-height: 80px;
+    padding-top: 1.5em;
+  }
+
+  .results h2 {
+    margin: 0;
+    font-size: 1.2em;
+  }
+
+  .remaining {
+    top: 0;
+    right: 0;
+  }
+
   .media {
     height: 170px;
   }
