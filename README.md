@@ -33,6 +33,12 @@ production build. Coverage is uploaded to Codecov from CI.
 Pushes to `main` are checked, tested, built, and deployed as a GitHub Pages
 artifact.
 
+## Credits
+
+Pokemon data, sprites, and cries are sourced from [PokeAPI](https://pokeapi.co/), the [PokeAPI sprites repository](https://github.com/PokeAPI/sprites), and the [PokeAPI cries repository](https://github.com/PokeAPI/cries).
+
+Pokemon is a trademark of Nintendo, Creatures Inc., and GAME FREAK inc. This is an unofficial fan project and is not affiliated with or endorsed by them.
+
 ## License
 
 [MIT](LICENSE)
