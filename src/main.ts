@@ -19,6 +19,7 @@ interface GenerationConfig extends GenerationPaths {
 interface PokemonEntry {
   def: PokemonDef;
   paths: GenerationPaths;
+  generation: Generation;
 }
 
 interface ExpertPokemon {
@@ -61,11 +62,16 @@ const resolvePokemon = (entry: PokemonEntry, forcedForm?: string): Pokemon => {
     form: formName,
     sprite: `media/sprites/${entry.paths.spritesDir}/${spriteId}.png`,
     cry: `media/cries/${cryDir}/${cryId}.mp3`,
+    generation: entry.generation,
   };
 };
 
-const createGeneration = (defs: PokemonDef[], config: GenerationConfig): GenData => {
-  const list = defs.map((def) => ({ def, paths: config }));
+const createGeneration = (
+  defs: PokemonDef[],
+  config: GenerationConfig,
+  generation: Generation,
+): GenData => {
+  const list = defs.map((def) => ({ def, paths: config, generation }));
   return { ...config, pokemon: list, pokemonLeft: list.slice() };
 };
 
@@ -175,6 +181,7 @@ const gens = Object.fromEntries(
         ...(formOnlyPools.get(generation)?.values() ?? []),
       ],
       generationConfigs[generation],
+      generation,
     ),
   ]),
 ) as Record<Generation, GenData>;
@@ -332,6 +339,78 @@ const speciesName = (pokemon: PokemonDef): string => pokemon.name || pokemon.ide
 const displayName = (pokemon: PokemonDef): string => {
   const name = speciesName(pokemon);
   return pokemon.form ? `${name} (${formLabel(pokemon.form)})` : name;
+};
+
+const generationLabels: Record<Generation, string> = {
+  1: 'I',
+  2: 'II',
+  3: 'III',
+  4: 'IV',
+  5: 'V',
+  6: 'VI',
+  7: 'VII',
+  8: 'VIII',
+  9: 'IX',
+};
+
+interface GenerationSummary {
+  generation: Generation;
+  correct: number;
+  total: number;
+}
+
+const getGenerationSummaries = (): GenerationSummary[] => {
+  const summaries = new Map<Generation, GenerationSummary>();
+  for (const { pokemon, correct } of guessedPokemon) {
+    const generation = pokemon.generation;
+    let summary = summaries.get(generation);
+    if (!summary) {
+      summary = { generation, correct: 0, total: 0 };
+      summaries.set(generation, summary);
+    }
+    summary.total++;
+    if (correct) {
+      summary.correct++;
+    }
+  }
+
+  return [...summaries.values()].sort((left, right) => left.generation - right.generation);
+};
+
+const createEndStatsTable = (): HTMLTableElement => {
+  const table = document.createElement('table');
+  table.className = 'end-stats';
+  table.setAttribute('aria-label', 'Stats by generation');
+
+  const head = document.createElement('thead');
+  const headRow = document.createElement('tr');
+  for (const label of ['gen', 'correct', 'total', 'accuracy']) {
+    const cell = document.createElement('th');
+    cell.scope = 'col';
+    cell.textContent = label;
+    headRow.appendChild(cell);
+  }
+  head.appendChild(headRow);
+
+  const body = document.createElement('tbody');
+  for (const summary of getGenerationSummaries()) {
+    const row = document.createElement('tr');
+    const values = [
+      generationLabels[summary.generation],
+      String(summary.correct),
+      String(summary.total),
+      `${Math.round((summary.correct / summary.total) * 100)}%`,
+    ];
+    for (const value of values) {
+      const cell = document.createElement('td');
+      cell.textContent = value;
+      row.appendChild(cell);
+    }
+    body.appendChild(row);
+  }
+
+  table.append(head, body);
+  return table;
 };
 
 const normalizeSearch = (value: string): string =>
@@ -897,6 +976,7 @@ const displayEndScreen = (): void => {
 
   header.append(title, summary, playAgain);
   endScreenElement.appendChild(header);
+  endScreenElement.appendChild(createEndStatsTable());
 
   for (let i = 0, len = guessedPokemon.length; i < len; i++) {
     const { pokemon, correct } = guessedPokemon[i];

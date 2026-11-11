@@ -14,6 +14,7 @@ interface PokemonDef {
 interface Pokemon extends PokemonDef {
   sprite: string;
   cry: string;
+  generation: Generation;
 }
 
 interface PokemonData {

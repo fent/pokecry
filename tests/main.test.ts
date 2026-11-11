@@ -47,6 +47,10 @@ const options = (): HTMLButtonElement[] =>
 const playButton = (): HTMLButtonElement => document.querySelector<HTMLButtonElement>('.play')!;
 const sprite = (): HTMLImageElement => document.querySelector<HTMLImageElement>('.pokemon-sprite')!;
 const endScreen = (): HTMLDivElement => document.querySelector<HTMLDivElement>('.end-screen')!;
+const endStatsRows = (): (string | null)[][] =>
+  Array.from(document.querySelectorAll<HTMLTableRowElement>('.end-stats tbody tr')).map((row) =>
+    Array.from(row.querySelectorAll('td')).map((cell) => cell.textContent),
+  );
 const score = (): HTMLSpanElement => document.querySelector<HTMLSpanElement>('.score')!;
 const remaining = (): HTMLSpanElement => document.querySelector<HTMLSpanElement>('.remaining')!;
 const status = (): HTMLParagraphElement => document.querySelector<HTMLParagraphElement>('.status')!;
@@ -193,8 +197,11 @@ const advanceRound = (): void => {
   vi.advanceTimersByTime(REVEAL_TIMEOUT);
 };
 
-const gen1Count = (): number =>
-  (window as unknown as { pokemon: { gen1: unknown[] } }).pokemon.gen1.length;
+const genCount = (key: 'gen1' | 'gen2'): number =>
+  (window as unknown as { pokemon: Record<string, unknown[]> }).pokemon[key].length;
+
+const gen1Count = (): number => genCount('gen1');
+const gen2Count = (): number => genCount('gen2');
 
 const playRounds = (count: number): void => {
   for (let round = 1; round <= count; round++) {
@@ -1101,6 +1108,21 @@ describe('pokecry', () => {
     expect(endScreen().querySelectorAll('.end-pokemon')).toHaveLength(total);
   });
 
+  it('shows per-generation stats on the end screen', async () => {
+    await start();
+    document.querySelector<HTMLButtonElement>('.gen-2')!.click();
+    const total = gen1Count() + gen2Count();
+
+    playRounds(total);
+
+    const rows = endStatsRows();
+    expect(rows).toHaveLength(2);
+    expect(rows).toEqual([
+      ['I', `${gen1Count()}`, `${gen1Count()}`, '100%'],
+      ['II', `${gen2Count()}`, `${gen2Count()}`, '100%'],
+    ]);
+  });
+
   it('keeps the end screen when the selected generation is exhausted', async () => {
     await start();
     playRounds(gen1Count());
@@ -1191,6 +1213,38 @@ describe('pokecry', () => {
     expect(endScreen().classList.contains('hidden')).toBe(false);
     expect(endScreen().querySelectorAll('.end-pokemon')).toHaveLength(1);
     expect(status().textContent).toContain('Wrong');
+  });
+
+  it('counts form-only answers in their pool generation', async () => {
+    (window as unknown as { __POKECRY_TEST__: boolean }).__POKECRY_TEST__ = true;
+    await start();
+
+    const hooks = (
+      window as unknown as {
+        __pokecryTest: {
+          nextRound: () => void;
+          getGeneration: (generation: number) => PokemonWithForms[];
+          setPokemonLeft: (lists: unknown[]) => void;
+        };
+      }
+    ).__pokecryTest;
+
+    document.querySelector<HTMLButtonElement>('.gen-7')!.click();
+    const vulpix = hooks.getGeneration(7).find((pokemon) => pokemon.identifier === 'vulpix')!;
+    hooks.setPokemonLeft([
+      [
+        {
+          def: vulpix,
+          paths: { spritesDir: 'sun-moon', criesDir: 'latest' },
+          generation: 7,
+        },
+      ],
+    ]);
+    hooks.nextRound();
+
+    guessCorrect();
+
+    expect(endStatsRows()).toEqual([['VII', '1', '1', '100%']]);
   });
 
   it('never uses another form of the answer species as a decoy', async () => {
@@ -1294,6 +1348,10 @@ describe('pokecry', () => {
     expect(endScreen().querySelector('.end-summary')?.textContent).toBe(
       `${total - 1} correct / 1 wrong`,
     );
+    const statsTable = endScreen().querySelector<HTMLTableElement>('.end-stats')!;
+    expect(statsTable.querySelector('caption')).toBeNull();
+    expect(statsTable.getAttribute('aria-label')).toBe('Stats by generation');
+    expect(endStatsRows()).toEqual([['I', `${total - 1}`, `${total}`, '99%']]);
 
     const wrongSprite = wrongSprites[0];
     expect(wrongSprite.getAttribute('data-tooltip')).toContain('wrong');

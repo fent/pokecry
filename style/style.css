@@ -426,6 +426,33 @@ button {
   margin: 0;
 }
 
+.end-stats {
+  width: 100%;
+  max-width: 24em;
+  margin: 0 auto 1.5em;
+  border-collapse: collapse;
+  color: var(--muted-strong);
+  font-size: 0.8em;
+  table-layout: fixed;
+}
+
+.end-stats th,
+.end-stats td {
+  padding: 0.2em 0.7em;
+  border-bottom: 1px solid var(--muted);
+  font-weight: normal;
+  overflow-wrap: anywhere;
+}
+
+.end-stats th:not(:first-child),
+.end-stats td:not(:first-child) {
+  text-align: right;
+}
+
+.end-stats tbody tr:last-child td {
+  border-bottom: 0;
+}
+
 .play-again {
   padding: 0.15em 1em;
   border: 1px solid var(--muted-strong);
@@ -556,6 +583,15 @@ button {
 
   .end-screen {
     padding: 2em 1em 1em;
+  }
+
+  .end-stats {
+    font-size: 0.62em;
+  }
+
+  .end-stats th,
+  .end-stats td {
+    padding: 0.2em 0.35em;
   }
 
   .end-screen .pokemon-sprite {
